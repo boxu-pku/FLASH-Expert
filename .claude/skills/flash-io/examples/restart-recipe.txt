@@ -1,0 +1,102 @@
+# restart-recipe.txt
+# LaserSlab restart（续跑）parfile 片段
+# 参考 source/Simulation/SimulationMain/LaserSlab/restart_2d_3lasers.par
+# 详见 .claude/skills/flash-io/knowledge/recipes.md §4
+
+##########################
+#                        #
+#   RESTART PARAMETERS   #
+#                        #
+##########################
+
+# ★ restart 标志（必设）
+restart              = .true.
+
+# ★ 要读的 checkpoint 编号（必设）
+# 假设读 lasslab_hdf5_chk_0015
+checkpointFileNumber = 15
+
+# ★ plotFileNumber 续接（不要重置！否则会覆盖之前的 plotfile）
+# 假设之前出到 plotFileNumber=7
+plotFileNumber       = 7
+
+### Setup 命令必须和原 run 完全一致！###
+#
+# 必须相同的选项：
+#   -2d / -3d            # 维度
+#   -nxb=N -nyb=N -nzb=N # 块大小（NXB/NYB/NZB 是编译时常量）
+#   +cylindrical / ...   # 几何
+#   +laser +mgd +uhd3t   # 物理 setup 变量
+#   species=...          # 物质
+#
+# 否则 io_checkBlockShape.F90:L39-L41 会 abort：
+#   "NXB in checkpoint does not match this executable!"
+
+# === 原 run setup（参考）===
+# ./setup LaserSlab -2d -auto +cylindrical -nxb=16 -nyb=16 \
+#         +hdf5typeio \
+#         species=cham,targ +mtmmmt +laser +uhd3t +mgd mgd_meshgroups=6 \
+#         -objdir=cases/LaserSlab -parfile=example.par
+
+# === restart setup（必须一致）===
+# ./setup LaserSlab -2d -auto +cylindrical -nxb=16 -nyb=16 \
+#         +hdf5typeio \
+#         species=cham,targ +mtmmmt +laser +uhd3t +mgd mgd_meshgroups=6 \
+#         -objdir=cases/LaserSlab_restart -parfile=restart.par
+
+### IO 控制（保持和原 run 一致）###
+
+basenm                = "lasslab_"
+output_directory      = "01-data/"
+stats_file            = "lasslab.dat"
+
+# 输出频率（保持一致，否则下次续跑间隔会变）
+plotFileIntervalStep      = 100
+plotFileIntervalTime      = 0.01e-09
+checkpointFileIntervalStep = 1000
+checkpointFileIntervalTime = 1.0            # 默认值（不触发）
+
+# plot 变量（保持一致）
+plot_var_1 = "dens"
+plot_var_2 = "depo"
+plot_var_3 = "tele"
+plot_var_4 = "tion"
+plot_var_5 = "trad"
+plot_var_6 = "ye  "
+plot_var_7 = "sumy"
+plot_var_8 = "cham"
+plot_var_9 = "targ"
+
+### Restart 续跑步骤 ###
+
+# 1. 用和原 run 完全一致的 setup 命令（仅 -objdir 和 -parfile 不同）：
+#    cd $FLASH_DIR
+#    ./setup LaserSlab -2d -auto +cylindrical -nxb=16 -nyb=16 \
+#            +hdf5typeio species=cham,targ +mtmmmt +laser +uhd3t +mgd mgd_meshgroups=6 \
+#            -objdir=cases/LaserSlab_restart -parfile=restart.par
+#
+# 2. make:
+#    cd cases/LaserSlab_restart
+#    make -j4
+#
+# 3. 拷贝原 run 的 chk 文件过来：
+#    cp ../LaserSlab/lasslab_hdf5_chk_0015 .
+#    # 注意：outputSplitNum > 1 时需拷所有 split 文件
+#
+# 4. 跑：
+#    ./flash4 -par_file=flash.par
+#
+# 5. 验证：日志开头应输出 "Read checkpoint file lasslab_hdf5_chk_0015"
+
+### 自动 restart（替代方案）###
+
+# 如果嫌手动改 parfile 麻烦，可用 appendParRestart = .true.：
+# 每次写 chk 后会自动追加到 parfile：
+#   ### BEGIN written by [IO_writeCheckpoint] ###
+#   restart = .true.
+#   checkpointFileNumber = 0015
+#   plotFileNumber = 0007
+#   ### END written by [IO_writeCheckpoint] ###
+# 下次跑同一个 parfile 就会自动 restart
+
+appendParRestart = .false.              # 默认 false（用户希望 parfile 不被修改）

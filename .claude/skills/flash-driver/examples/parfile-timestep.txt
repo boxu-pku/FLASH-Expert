@@ -1,0 +1,49 @@
+# ============================================================
+# FLASH 4.8 parfile 时间步控制片段
+# ============================================================
+# 对应知识库：.claude/skills/flash-driver/knowledge/recipes.md §7
+#
+# 把这段加到 flash.par 顶层（不在任何 sourceTerm 段）
+# 适合大多数算例的"安全配置"
+# ============================================================
+
+# ===== 时间步控制 =====
+tinitial = 0.0                    # 起始时间（s）
+tmax = 1.0e-8                     # 终止时间（按你的物理问题改，ICF 典型 10 ns）
+
+nbegin = 1                        # 起始步
+nend = 1000000                    # 终止步（设大让 tmax 主导）
+
+dtinit = 1.0e-12                  # 初始 dt（保守起步，单位 s）
+dtmin = 1.0e-20                   # 物理最小 dt（防止异常 abort）
+dtmax = 1.0e5                     # 物理最大 dt
+
+tstep_change_factor = 1.5         # dt 每步最大变化倍数（1.5 保守，2.0 默认）
+dr_tstepSlowStartFactor = 0.05    # 慢启动因子（CFL × 0.05 起步，慢慢加大）
+
+# ===== 终止 =====
+wall_clock_time_limit = 604800    # 7 天（默认）；HPC 队列改 82000（24h×95%）
+
+# ===== 诊断 =====
+dr_printTStepLoc = .true.         # 打印限制 dt 的 cell 位置
+dr_dtMinContinue = 0.0            # 不限制（设 > 0 启用"早警告"）
+dr_dtMinBelowAction = 1           # dt 过小时：0=立即 abort，1=写 checkpoint 后 abort
+
+# ===== 最后一步缩短 =====
+dr_shortenLastStepBeforeTMax = .true.   # 最后一步缩短以恰好达到 tmax
+
+# ===== STS（如需要，按需启用）=====
+# useSTS = .true.
+# useSTSforDiffusion = .true.
+# allowDtSTSDominate = .false.
+# nuSTS = 0.1
+# nstepTotalSTS = 3                # 起步用 3，稳定后改 5
+
+# ===== 验证 =====
+# 跑几步后看日志：
+# grep "dr_nstep\|dr_simTime\|dr_dt" 01-data/<basenm>.log | head -20
+#
+# 应看到：
+# - dr_nstep 每步 +1
+# - dr_simTime 每步加 dr_dt
+# - dr_dt 慢慢增长（受 tstep_change_factor 限制）

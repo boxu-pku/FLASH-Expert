@@ -1,0 +1,87 @@
+# ============================================================
+# FLASH 4.8 parfile 几何 + 边界条件 配置片段（4 种几何）
+# ============================================================
+# 对应知识库：.claude/skills/flash-grid/knowledge/recipes.md §2
+#            .claude/skills/flash-grid/knowledge/overview.md §4
+#
+# 几何轴向映射（重要）：
+#   cartesian    : IAXIS=x, JAXIS=y, KAXIS=z
+#   cylindrical  : IAXIS=r, JAXIS=z, KAXIS=φ
+#   spherical    : IAXIS=r, JAXIS=θ, KAXIS=φ
+#   polar        : IAXIS=r, JAXIS=φ, KAXIS=z
+#
+# 2D 含义：
+#   cartesian -2d  = x-y 平面（丢 z）
+#   cylindrical -2d = R-Z 平面（丢 φ，最常用）
+#   spherical -2d  = r-θ 平面（丢 φ）
+#   polar -2d      = r-φ 平面（丢 z）
+# ============================================================
+
+# ===== 1. 2D 直角坐标（平面激波、Karman 涡街）=====
+# geometry = "cartesian"
+# xmin = 0.0    xmax = 2.0       # cm
+# ymin = 0.0    ymax = 2.0       # cm
+# xl_boundary_type = "outflow"
+# xr_boundary_type = "outflow"
+# yl_boundary_type = "outflow"
+# yr_boundary_type = "outflow"
+
+# ===== 2. 2D 柱坐标 R-Z（激光算例最常用）=====
+# geometry = "cylindrical"
+# xmin = 0.0    xmax = 0.02      # R, cm
+# ymin = 0.0    ymax = 0.05      # Z, cm
+# xl_boundary_type = "axisymmetric"   # ★ R=0 必须轴对称
+# xr_boundary_type = "outflow"
+# yl_boundary_type = "outflow"
+# yr_boundary_type = "outflow"
+
+# ===== 3. 1D 球坐标（ICF 内爆）=====
+# geometry = "spherical"
+# xmin = 0.0    xmax = 0.05      # R, cm
+# xl_boundary_type = "axisymmetric"   # ★ R=0 必须 axisymmetric
+# xr_boundary_type = "outflow"
+# (ymin/ymax/zmin/zmax 忽略，1D 只有径向)
+
+# ===== 4. 3D 球坐标（3D ICF）=====
+# geometry = "spherical"
+# xmin = 0.0    xmax = 0.1       # R, cm
+# ymin = 0.0    ymax = 180.0     # θ (极角), 度 ★
+# zmin = 0.0    zmax = 360.0     # φ (方位角), 度 ★
+# xl_boundary_type = "axisymmetric"
+# xr_boundary_type = "outflow"
+# yl_boundary_type = "reflecting"    # θ=0 反射
+# yr_boundary_type = "reflecting"    # θ=180 反射
+# zl_boundary_type = "periodic"      # φ 周期
+# zr_boundary_type = "periodic"
+
+# ===== 5. 3D 直角（3D RT、3D MHD）=====
+# geometry = "cartesian"
+# xmin = 0.0    xmax = 1.0
+# ymin = 0.0    ymax = 1.0
+# zmin = 0.0    zmax = 1.0
+# xl_boundary_type = "periodic"
+# xr_boundary_type = "periodic"
+# yl_boundary_type = "periodic"
+# yr_boundary_type = "periodic"
+# zl_boundary_type = "outflow"
+# zr_boundary_type = "outflow"
+
+# ============================================================
+# 边界条件类型速查：
+#   "periodic"       周期（默认）
+#   "outflow"        自由出流（导数=0）
+#   "reflecting"     反射（速度等奇对称）
+#   "axisymmetric"   径向轴对称（R=0 专用）
+#   "eqtdirichlet"   等温 dirichlet
+#   "diode"          二极管
+#   "user"           用户自定义
+#
+# 径向约束（重要）：
+#   - 径向 (xmin) 必须 >= 0
+#   - 如 xmin=0，xl_boundary_type 必须 "axisymmetric" 或 "reflecting"
+#   否则启动 abort
+#
+# 角度单位（重要）：
+#   - spherical θ ∈ [0, 180] 度（不是 π）
+#   - φ ∈ [0, 360] 度（不是 2π）
+# ============================================================

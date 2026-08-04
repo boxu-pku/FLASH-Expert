@@ -1,0 +1,71 @@
+# ============================================================
+# FLASH 4.8 parfile AMR 配置片段
+# ============================================================
+# 对应知识库：.claude/skills/flash-grid/knowledge/recipes.md §3
+#
+# 把这段加到 flash.par 顶层（不在任何 sourceTerm 段）
+# 适合大多数 AMR 算例的"安全配置"
+# ============================================================
+
+# ===== AMR 层级 =====
+lrefine_min = 1                    # 最小层级（几乎总是 1）
+lrefine_max = 4                    # ★ 最大层级（设 1 = 无 AMR；典型 4-6）
+nrefs = 2                          # 每 2 步重新细化/粗化
+lrefine_min_init = 1               # 初始化时的最小层级
+lrefine_del = 0                    # restart 时不减 lrefine_max
+
+# ===== 域分块（顶层 level-1 切几块）=====
+nblockx = 4                        # IAXIS 方向切 4 块
+nblocky = 4                        # JAXIS
+nblockz = 1                        # KAXIS（2D 算例设 1）
+
+# ===== 细化变量 1：密度（最常用）=====
+refine_var_1 = "dens"              # ★ 变量名（字符串，大小写敏感）
+refine_cutoff_1 = 0.2              # 误差 > 0.2 → 细化
+derefine_cutoff_1 = 0.05           # 误差 < 0.05 → 粗化
+refine_filter_1 = 0.01             # 反发散滤波
+
+# ===== 细化变量 2：温度（可选，多变量是 OR 关系）=====
+# refine_var_2 = "temp"
+# refine_cutoff_2 = 0.3
+# derefine_cutoff_2 = 0.1
+# refine_filter_2 = 0.02
+
+# ===== 细化变量 3-4（按需启用，最多 4 组）=====
+# refine_var_3 = "..."
+# refine_var_4 = "..."
+
+# ===== 粒子驱动细化（PIC 算例）=====
+# refine_on_particle_count = .true.
+# max_particles_per_blk = 50
+# min_particles_per_blk = 5
+
+# ===== 插值与守恒 =====
+flux_correct = .true.              # 粗细边界通量修正
+interpol_order = 2                 # 单调插值阶数（默认 2）
+convertToConsvdInMeshInterp = .true.   # 插值时转守恒形式
+
+# ===== Restrict（IO 前聚合树）=====
+gr_restrictAllMethod = 3           # 默认 3 = Grid_restrictByLevels
+
+# ===== 高级：按半径衰减 lrefine_max（ICF 用）=====
+# gr_lrefineMaxRedDoByLogR = .true.
+# gr_lrefineMaxRedRadiusFact = 0.5
+# x_refine_center = 0.0
+# y_refine_center = 0.0
+# z_refine_center = 0.0
+
+# ===== 高级：时变 lrefine_max =====
+# gr_lrefineMaxByTime = .true.
+# gr_lrefmaxTime_1 = 1.0e-9         # 在 1 ns 时
+# gr_lrefmaxTimeValue_1 = 3         # 把 lrefine_max 改成 3
+
+# ============================================================
+# 验证（跑几步后看日志）：
+# grep "refine\|derefine\|lrefine" 01-data/<basenm>.log | head -20
+#
+# 应看到：
+# - "number of leaf blocks = N"（N 随时间变化）
+# - "marked N blocks for refinement"
+# - "marked M blocks for derefinement"
+# ============================================================

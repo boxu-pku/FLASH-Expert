@@ -1,0 +1,212 @@
+# ============================================================
+# FLASH 4.8 激光配置片段 - 6 束对称打靶（Recipe 4）
+# ============================================================
+# 对应知识库：.claude/skills/flash-laser/knowledge/recipes.md §6
+#
+# 适用：ICF 直接驱动 / Hohlraum 间接驱动 / 多束球对称加热
+#
+# ⚠️ 关键：setup 命令必须含 ed_maxBeams=6，否则启动报错
+#         （默认只生成 6 套 beam 参数槽，刚好够用；想留余量可设 ed_maxBeams=10）
+#
+# 使用方法：
+#   1. setup 命令（★ 注意 ed_maxBeams=6 和 ed_maxRayCount）：
+#      ./setup laser_CH -2d -auto +pm4dev -geometry=cylindrical \
+#          -nxb=16 -nyb=16 +mtmmmt +laser +mgd +uhd3t \
+#          species=cham,targ1,targ2,targ3 mgd_meshgroups=6 \
+#          ed_maxBeams=6 ed_maxRayCount=8192 \
+#          threadRayTrace=true \
+#          -parfile=multi-beam-6.par \
+#          -objdir=cases/laser_6beams
+#
+#   2. cd cases/laser_6beams && make -j4
+#   3. ./flash4 -parfile=flash.par
+#
+# 参数单位速查：
+#   ed_wavelength      = μm
+#   ed_lens*/target*   = cm
+#   ed_gaussianRadius  = cm
+#   ed_time            = s
+#   ed_power           = W
+#   ed_*TorsionAngle   = 度
+# ============================================================
+
+# ===== 总开关 =====
+useEnergyDeposition       = .true.
+ed_laser3Din2D            = .true.
+ed_laser3Din2DwedgeAngle  = 0.1
+ed_gradOrder              = 2
+
+ed_printMain   = .true.
+ed_printPulses = .true.
+ed_printBeams  = .true.                      # 验证 6 束都被识别
+
+# ===== Pulse 1: 同 Recipe 2（300 GW, 6 ns 梯形）=====
+ed_numberOfPulses     = 1
+ed_numberOfSections_1 = 4
+ed_time_1_1 = 0.0       ; ed_power_1_1 = 0.0
+ed_time_1_2 = 0.1e-9    ; ed_power_1_2 = 3.0e11
+ed_time_1_3 = 6.0e-9    ; ed_power_1_3 = 3.0e11
+ed_time_1_4 = 6.1e-9    ; ed_power_1_4 = 0.0
+
+# ===== 6 束配置 =====
+ed_numberOfBeams = 6
+
+# ----- Beam 1: 方位角 0°（+X 方向）-----
+ed_pulseNumber_1              = 1
+ed_wavelength_1               = 1.053
+ed_lensX_1                    = 0.300         # cm（lens 圆周半径 3 mm）
+ed_lensY_1                    = 0.000         # cm
+ed_lensZ_1                    = 12.0          # cm
+ed_lensSemiAxisMajor_1        = 0.1           # cm
+ed_targetX_1                  = 0.0           # cm
+ed_targetY_1                  = 0.0           # cm
+ed_targetZ_1                  = 0.0           # cm
+ed_targetSemiAxisMajor_1      = 0.01          # cm
+ed_targetSemiAxisMinor_1      = 0.01          # cm
+ed_semiAxisMajorTorsionAxis_1 = "x"
+ed_semiAxisMajorTorsionAngle_1= 0.0           # 度
+ed_numberOfRays_1             = 2048
+ed_gridType_1                 = "radial2D"
+ed_gridnRadialTics_1          = 64
+ed_crossSectionFunctionType_1 = "gaussian2D"
+ed_gaussianExponent_1         = 4.0
+ed_gaussianRadiusMajor_1      = 0.01          # cm
+ed_gaussianRadiusMinor_1      = 0.01          # cm
+ed_gaussianCenterMajor_1      = 0.0
+ed_gaussianCenterMinor_1      = 0.0
+
+# ----- Beam 2: 方位角 60° -----
+ed_pulseNumber_2              = 1
+ed_wavelength_2               = 1.053
+ed_lensX_2                    = 0.150
+ed_lensY_2                    = 0.260         # sin(60°) × 0.3 ≈ 0.260
+ed_lensZ_2                    = 12.0
+ed_lensSemiAxisMajor_2        = 0.1
+ed_targetX_2                  = 0.0
+ed_targetY_2                  = 0.0
+ed_targetZ_2                  = 0.0
+ed_targetSemiAxisMajor_2      = 0.01
+ed_targetSemiAxisMinor_2      = 0.01
+ed_semiAxisMajorTorsionAxis_2 = "x"
+ed_semiAxisMajorTorsionAngle_2= 0.0
+ed_numberOfRays_2             = 2048
+ed_gridType_2                 = "radial2D"
+ed_gridnRadialTics_2          = 64
+ed_crossSectionFunctionType_2 = "gaussian2D"
+ed_gaussianExponent_2         = 4.0
+ed_gaussianRadiusMajor_2      = 0.01
+ed_gaussianRadiusMinor_2      = 0.01
+ed_gaussianCenterMajor_2      = 0.0
+ed_gaussianCenterMinor_2      = 0.0
+
+# ----- Beam 3: 方位角 120° -----
+ed_pulseNumber_3              = 1
+ed_wavelength_3               = 1.053
+ed_lensX_3                    = -0.150
+ed_lensY_3                    = 0.260         # sin(60°) × 0.3
+ed_lensZ_3                    = 12.0
+ed_lensSemiAxisMajor_3        = 0.1
+ed_targetX_3                  = 0.0
+ed_targetY_3                  = 0.0
+ed_targetZ_3                  = 0.0
+ed_targetSemiAxisMajor_3      = 0.01
+ed_targetSemiAxisMinor_3      = 0.01
+ed_semiAxisMajorTorsionAxis_3 = "x"
+ed_semiAxisMajorTorsionAngle_3= 0.0
+ed_numberOfRays_3             = 2048
+ed_gridType_3                 = "radial2D"
+ed_gridnRadialTics_3          = 64
+ed_crossSectionFunctionType_3 = "gaussian2D"
+ed_gaussianExponent_3         = 4.0
+ed_gaussianRadiusMajor_3      = 0.01
+ed_gaussianRadiusMinor_3      = 0.01
+ed_gaussianCenterMajor_3      = 0.0
+ed_gaussianCenterMinor_3      = 0.0
+
+# ----- Beam 4: 方位角 180°（-X 方向）-----
+ed_pulseNumber_4              = 1
+ed_wavelength_4               = 1.053
+ed_lensX_4                    = -0.300
+ed_lensY_4                    = 0.000
+ed_lensZ_4                    = 12.0
+ed_lensSemiAxisMajor_4        = 0.1
+ed_targetX_4                  = 0.0
+ed_targetY_4                  = 0.0
+ed_targetZ_4                  = 0.0
+ed_targetSemiAxisMajor_4      = 0.01
+ed_targetSemiAxisMinor_4      = 0.01
+ed_semiAxisMajorTorsionAxis_4 = "x"
+ed_semiAxisMajorTorsionAngle_4= 0.0
+ed_numberOfRays_4             = 2048
+ed_gridType_4                 = "radial2D"
+ed_gridnRadialTics_4          = 64
+ed_crossSectionFunctionType_4 = "gaussian2D"
+ed_gaussianExponent_4         = 4.0
+ed_gaussianRadiusMajor_4      = 0.01
+ed_gaussianRadiusMinor_4      = 0.01
+ed_gaussianCenterMajor_4      = 0.0
+ed_gaussianCenterMinor_4      = 0.0
+
+# ----- Beam 5: 方位角 240° -----
+ed_pulseNumber_5              = 1
+ed_wavelength_5               = 1.053
+ed_lensX_5                    = -0.150
+ed_lensY_5                    = -0.260        # -sin(60°) × 0.3
+ed_lensZ_5                    = 12.0
+ed_lensSemiAxisMajor_5        = 0.1
+ed_targetX_5                  = 0.0
+ed_targetY_5                  = 0.0
+ed_targetZ_5                  = 0.0
+ed_targetSemiAxisMajor_5      = 0.01
+ed_targetSemiAxisMinor_5      = 0.01
+ed_semiAxisMajorTorsionAxis_5 = "x"
+ed_semiAxisMajorTorsionAngle_5= 0.0
+ed_numberOfRays_5             = 2048
+ed_gridType_5                 = "radial2D"
+ed_gridnRadialTics_5          = 64
+ed_crossSectionFunctionType_5 = "gaussian2D"
+ed_gaussianExponent_5         = 4.0
+ed_gaussianRadiusMajor_5      = 0.01
+ed_gaussianRadiusMinor_5      = 0.01
+ed_gaussianCenterMajor_5      = 0.0
+ed_gaussianCenterMinor_5      = 0.0
+
+# ----- Beam 6: 方位角 300° -----
+ed_pulseNumber_6              = 1
+ed_wavelength_6               = 1.053
+ed_lensX_6                    = 0.150
+ed_lensY_6                    = -0.260
+ed_lensZ_6                    = 12.0
+ed_lensSemiAxisMajor_6        = 0.1
+ed_targetX_6                  = 0.0
+ed_targetY_6                  = 0.0
+ed_targetZ_6                  = 0.0
+ed_targetSemiAxisMajor_6      = 0.01
+ed_targetSemiAxisMinor_6      = 0.01
+ed_semiAxisMajorTorsionAxis_6 = "x"
+ed_semiAxisMajorTorsionAngle_6= 0.0
+ed_numberOfRays_6             = 2048
+ed_gridType_6                 = "radial2D"
+ed_gridnRadialTics_6          = 64
+ed_crossSectionFunctionType_6 = "gaussian2D"
+ed_gaussianExponent_6         = 4.0
+ed_gaussianRadiusMajor_6      = 0.01
+ed_gaussianRadiusMinor_6      = 0.01
+ed_gaussianCenterMajor_6      = 0.0
+ed_gaussianCenterMinor_6      = 0.0
+
+# ===== LaserIO（看 ray 路径，验证 6 束都打到中心）=====
+ed_useLaserIO                  = .true.
+ed_laserIOMaxNumberOfPositions = 10000
+ed_laserIOMaxNumberOfRays      = 256          # 6 束 × ~42 ray/束
+ed_laserIORayFrequency         = 1
+
+# ===== 验证 =====
+# 日志应该打印 6 个 beam 的详情（ed_printBeams=.true.）
+# plotfile 的 depo 应该在 target 中心叠加（六束汇聚）
+# 总沉积能量 ≈ 6 × 单束沉积（验证每束都在工作）
+#
+# ⚠️ 常见错误：
+#   - 漏 ed_maxBeams=6 → 启动报 "Not enough beam runtime parameters"
+#   - 漏 ed_maxRayCount=8192 → 跑几步报 "Too many rays! No storage"
+#   - 6 个 lensZ 不一致 → 失去对称性

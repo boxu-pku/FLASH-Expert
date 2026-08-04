@@ -1,0 +1,87 @@
+---
+title: Flash.h 文件
+skill: flash-grid
+category: detailed
+source_anchors:
+  - bin/genFiles.py:1-20
+  - source/Simulation/SimulationMain/Sedov/Config:100-107
+  - source/Grid/GridMain/UG/Flash.h:1-10
+manual_ref: "FLASH 4.8 User Guide §6 (The Flash.h File) pp.89-96, PDF pp.107-118"
+created: 2026-07-19
+last_verified: 2026-07-19
+verifier: opencode-ai
+status: draft
+tags:
+  - flash.h
+  - variables
+  - indexing
+  - preprocessor
+  - unk
+---
+
+# Flash.h 文件（§6）
+
+> **TL;DR**：`Flash.h` 是 setup 生成的预处理器头文件。定义 `NXB`/`NYB`/`NZB`（block 尺寸）、`NUNK_VARS`（变量总数）、`DENS_VAR`/`PRES_VAR`/`TEMP_VAR` 等变量索引、`SPECIES_BEGIN`/`END`、`MASS_SCALARS_BEGIN`/`END`。每个 FLASH 应用的 `Flash.h` 不同，用户不应手动修改。
+
+## 1. Block 几何常量（§6.1）
+
+| 符号 | 含义 |
+|---|---|
+| `NXB, NYB, NZB` | 各维度 block 内 cell 数 |
+| `MAXCELLS` | `max(NXB, NYB, NZB)` |
+| `MAXBLOCKS` | 每 processor 最大 block 数 |
+| `NGUARD` | guard cell 层数 |
+| `GRID_ILO, GRID_IHI` | 内部 cell 最小/最大索引 |
+| `GRID_ILO_GC, GRID_IHI_GC` | 含 guard cell 的最小/最大索引 |
+
+FIXEDBLOCKSIZE 模式（PM + UG 默认）下编译时确定；NONFIXEDBLOCKSIZE 模式（`+nofbs`）下运行时确定。
+
+## 2. 变量索引（§6.2）
+
+`unk` 数组按**属性变量 → 物种质量分数 → 质量标量**顺序排列。
+
+| 符号 | 含义 |
+|---|---|
+| `NPROP_VARS` | 属性变量数 |
+| `NSPECIES` | 物种数 |
+| `NMASS_SCALARS` | 质量标量数 |
+| `NUNK_VARS` | 三者之和 |
+| `PROP_VARS_BEGIN, PROP_VARS_END` | 属性变量索引范围 |
+| `SPECIES_BEGIN, SPECIES_END` | 物种索引范围 |
+| `MASS_SCALARS_BEGIN, MASS_SCALARS_END` | 质量标量索引范围 |
+
+**特定变量索引**：`DENS_VAR`, `PRES_VAR`, `TEMP_VAR`, `VELX_VAR`, `GAMC_VAR`, `GAME_VAR` 等（Config 中声明→变量名大写 + `_VAR` 后缀）。物种：`HE4_SPEC`（`_SPEC` 后缀）。质量标量：`SELE_MSCALAR`（`_MSCALAR` 后缀）。
+
+**命名警告**：变量、物种、质量标量不要共用前缀——`temp` 变量和 `temp` 质量标量在 Flash.h 内部可区分，但后处理工具（fidlr）无法区分。
+
+## 3. 通量与面心变量（§6.3-6.4）
+
+| 符号 | 含义 |
+|---|---|
+| `NFLUXES` | 通量变量数（仅 AMR 需要） |
+| `NFACE_VARS` | 面心变量数 |
+| `NSCRATCH_GRID_VARS` | 临时网格变量数（已弃用） |
+| `NSCRATCH_CENTER_VARS` | 体心临时变量数 |
+| `NSCRATCH_FACE_X/Y/Z_VARS` | 面心临时变量数 |
+
+## 4. Particles（§6.6）
+
+`NPART_PROPS`：粒子属性数。`DENS_PART_PROP` 等为具体属性索引。
+
+## 5. 非复制变量（§6.7，NONREP）
+
+用于 MGD 辐射群等跨 mesh 复制的变量。宏：
+
+| 宏 | 用途 |
+|---|---|
+| `NONREP_NLOCS(...)` | 本进程负责的本地变量数 |
+| `NONREP_LOC2GLOB(...)` | 本地索引 → 全局索引 |
+| `NONREP_GLOB2LOC(...)` | 全局索引 → 本地索引 |
+
+**源码验证**：`bin/genFiles.py` 生成 `Flash.h`。变量索引顺序由 Config 文件中 `VARIABLE` 声明顺序决定。
+
+## 6. 变更日志
+
+| 日期 | 改动 |
+|---|---|
+| 2026-07-19 | 创建 draft |

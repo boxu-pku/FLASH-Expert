@@ -1,0 +1,76 @@
+# ============================================================
+# FLASH 4.8 激光配置片段 - 最小可运行（Recipe 1）
+# ============================================================
+# 对应知识库：.claude/skills/flash-laser/knowledge/recipes.md §3
+#
+# 适用：第一次配置 FLASH 激光，验证 setup/make/run 流程
+#
+# 使用方法：
+#   1. setup 命令：
+#      ./setup laser_CH -2d -auto +pm4dev -geometry=cylindrical \
+#          -nxb=16 -nyb=16 +mtmmmt +laser +mgd +uhd3t \
+#          species=cham,targ1,targ2,targ3 mgd_meshgroups=6 \
+#          -parfile=minimal-gaussian.par \
+#          -objdir=cases/laser_minimal
+#
+#   2. cd cases/laser_minimal && make -j4
+#   3. ./flash4 -parfile=flash.par
+#
+# 参数单位速查（不要搞错）：
+#   ed_wavelength      = μm  （不是 cm/nm！）
+#   ed_lens*/target*   = cm
+#   ed_gaussianRadius  = cm
+#   ed_time            = s
+#   ed_power           = W   （不是 erg/s，源码自动转）
+#   ed_*TorsionAngle   = 度  （不是弧度）
+# ============================================================
+
+# ===== 总开关 =====
+useEnergyDeposition       = .true.
+ed_laser3Din2D            = .true.            # 2D RZ 必须
+ed_laser3Din2DwedgeAngle  = 0.1               # 楔角（度）
+ed_gradOrder              = 2                 # 一阶折射
+
+# ===== Pulse 1: 简单 1 ns 梯形（100 GW 峰值）=====
+ed_numberOfPulses     = 1
+ed_numberOfSections_1 = 4
+ed_time_1_1 = 0.0       ; ed_power_1_1 = 0.0          # 起始 0
+ed_time_1_2 = 0.1e-9    ; ed_power_1_2 = 1.0e11       # 100 ps 上升沿 → 100 GW
+ed_time_1_3 = 0.9e-9    ; ed_power_1_3 = 1.0e11       # 800 ps 平顶
+ed_time_1_4 = 1.0e-9    ; ed_power_1_4 = 0.0          # 100 ps 下降沿
+
+# ===== Beam 1: 单束圆光斑标准高斯 =====
+ed_numberOfBeams = 1
+ed_pulseNumber_1              = 1
+ed_wavelength_1               = 1.053         # μm（钕玻璃激光基频）
+
+# 几何：lens 在 z=12 cm（域外），target 在原点
+ed_lensX_1                    = 0.0           # cm
+ed_lensY_1                    = 0.0           # cm
+ed_lensZ_1                    = 12.0          # cm
+ed_lensSemiAxisMajor_1        = 0.5           # cm（lens 口径 1 cm）
+
+ed_targetX_1                  = 0.0           # cm
+ed_targetY_1                  = 0.0           # cm
+ed_targetZ_1                  = 0.0           # cm（光斑中心）
+ed_targetSemiAxisMajor_1      = 0.01          # cm（光斑半径 100 μm）
+ed_targetSemiAxisMinor_1      = 0.01          # cm（a=b 圆形）
+ed_semiAxisMajorTorsionAxis_1 = "x"
+ed_semiAxisMajorTorsionAngle_1= 0.0           # 度
+
+# 标准高斯（α=1），ray 数少（512 够跑通）
+ed_numberOfRays_1             = 512
+ed_gridType_1                 = "radial2D"
+ed_gridnRadialTics_1          = 16
+ed_crossSectionFunctionType_1 = "gaussian2D"
+ed_gaussianExponent_1         = 1.0           # α=1 标准高斯
+ed_gaussianRadiusMajor_1      = 0.01          # cm（1/e 半径 = 100 μm）
+ed_gaussianRadiusMinor_1      = 0.01          # cm
+ed_gaussianCenterMajor_1      = 0.0           # cm（同心）
+ed_gaussianCenterMinor_1      = 0.0           # cm
+
+# ===== 验证（可选）=====
+# 跑完后检查 plotfile 的 depo 变量：
+#   - target 附近（r < 100 μm, z ≈ 0）应该非零
+#   - 中心最强，向外高斯衰减
+#   - TELE_VAR 在 target 区域升高

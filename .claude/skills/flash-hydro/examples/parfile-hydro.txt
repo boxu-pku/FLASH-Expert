@@ -1,0 +1,91 @@
+# ============================================================
+# FLASH 4.8 parfile Hydro 配置片段
+# ============================================================
+# 对应知识库：.claude/skills/flash-hydro/knowledge/recipes.md
+#
+# 把这段加到 flash.par 顶层（不在任何 sourceTerm 段）
+# 适合大多数 unsplit 算例的"安全配置"
+# ============================================================
+
+# ===== 主控 =====
+useHydro = .true.
+updateHydroFluxes = .true.
+cfl = 0.5                        # ★ 保守起步；温和算例可到 0.8；强激波 0.3-0.4
+
+# ===== Riemann solver（默认 HLLC）=====
+RiemannSolver = "HLLC"           # 纯流体默认；MHD 用 HLLD；强激波用 Hybrid
+
+# Roe 的 entropy fix（如果用 Roe 才需要）
+# RiemannSolver = "Roe"
+# entropy = .true.
+# entropyFixMethod = "HARTENHYMAN"
+
+# ===== 重构 / 限幅器（默认）=====
+order = 2                        # 1=Godunov, 2=MUSCL-Hancock（默认）, 3=PPM, 5=WENO, 6=GP
+hy_3Torder = -1                  # -1=同 order
+transOrder = 1                   # 3D CTU transverse flux 阶
+use_3dFullCTU = .true.           # CFL≤1（仅 Cartesian）
+
+slopeLimiter = "vanLeer"         # 默认；minmod/MC/vanLeer/vanLeer15/hybrid/limited
+charLimiting = .true.            # ★ 默认；激波附近不要关
+# LimitedSlopeBeta = 1.0         # slopeLimiter="limited" 才用
+
+# ===== 激波探测（强激波算例启用）=====
+shockDetect = .false.            # 默认关；强激波开
+shockLowerCFL = .false.          # 默认关；激波 cell 自动降 CFL
+# hy_fallbackLowerCFL = .false.
+# hy_cflFallbackFactor = 0.9
+
+# ===== 杂交重构（positivity preservation）=====
+use_hybridOrder = .false.        # 默认关；强激波算例开
+# hybridOrderKappa = 0.0
+# PosKappa1 = 0.4
+# PosKappa2 = 0.4
+
+# ===== 人工粘性（默认关）=====
+use_avisc = .false.
+# cvisc = 0.1
+
+# ===== 辅助内能方程（默认开，避免 KE ≫ IE 消去）=====
+use_auxEintEqn = .true.          # ★ 默认开，确认
+EOSforRiemann = .false.          # 默认关（开则更准但慢）
+
+# ===== 截断（floor values）=====
+small = 1.e-10
+smlrho = 1.e-10                  # ★ 实验室尺度；天体算例降到 1.e-30
+smallp = 1.e-10
+smalle = 1.e-10
+smallt = 1.e-10
+smallu = 1.e-10
+smallx = 1.e-10
+tiny = 1.e-16
+
+# ===== EOS / guard cell =====
+hy_eosModeGc = "see eosMode"     # 默认跟全局 eosMode
+use_gravHalfUpdate = .true.      # 2 阶时间中心
+hydroComputeDtOption = -1        # 完整 dt 计算（推荐）
+
+# ===== MHD 专属（仅 +usm 算例）=====
+# RiemannSolver = "HLLD"         # MHD 必用
+# killdivb = .true.              # CT（默认开）
+# killdivb8w = .false.           # 用 Powell 8-wave 替代 CT（不推荐）
+# prolMethod = "balsara_prol"    # cylindrical 强制
+
+# ===== 非理想 MHD（按需启用）=====
+# use_Hall = .false.
+# use_Biermann = .false.
+# use_Nernst = .false.
+# use_CrossField = .false.
+
+# ============================================================
+# 注意（L-009）：parfile 顶部 setup 注释可能不可信
+# 验证实际 setup 用：
+#   cat cases/<case>/setup_call
+# ============================================================
+
+# ============================================================
+# 验证（跑几步后看日志）：
+# grep "Hydro\|RiemannSolver\|cfl\|slopeLimiter" 01-data/<basenm>.log | head -20
+#
+# 应看到 Hydro_init 打印的参数值（和你 parfile 设置一致）
+# ============================================================

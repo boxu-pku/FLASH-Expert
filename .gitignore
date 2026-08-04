@@ -1,0 +1,28 @@
+# === FLASH 编译产物 ===
+cases/*/flash4
+cases/*/*.o
+cases/*/*.mod
+cases/*/setup_*.py
+cases/*/setup_*.c
+cases/*/setup_buildstamp.*
+cases/*/Makefile
+cases/*/Makefile.h
+cases/*/Flash.h
+
+# === 运行数据 ===
+cases/*/01-data/
+cases/*/01-data_old*/
+
+# === 大文件（不传 GitHub）===
+agent/manual/flash4_ug_4p8.pdf
+agent/manual/*/*-raw*.txt
+agent/manual/*/*-raw2*.txt
+
+# === draft 归档 ===
+agent/drafts/archive/
+
+# === 旧版 .gitignore 内容 ===
+object/
+*.o
+*.mod
+*.a

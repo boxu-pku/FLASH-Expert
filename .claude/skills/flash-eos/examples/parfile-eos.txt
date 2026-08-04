@@ -1,0 +1,69 @@
+# ============================================================
+# FLASH 4.8 parfile EOS 配置片段
+# ============================================================
+# 对应知识库：.claude/skills/flash-eos/knowledge/recipes.md
+#
+# 把这段加到 flash.par 顶层（不在任何 sourceTerm 段）
+# 适合大多数 Helmholtz 算例的"安全配置"
+# ============================================================
+
+# ===== 主控（在 Grid 单元声明）=====
+eosMode = "dens_ie"               # 默认；3T 用 dens_ie_recal_gather
+eosModeInit = "dens_ie"           # 初始化用；某些场景用 dens_temp
+smalle = 1.e-10                   # 内能下限（实验室尺度）
+smallt = 1.e-10                   # 温度下限
+smlrho = 1.e-10                   # 密度下限
+smallx = 1.e-10                   # 物种丰度下限
+
+# ===== Eos 顶层 =====
+eintSwitch = 0.0                  # 0=用 EINT_VAR 直接值；>0 时按需用减法
+# gamma = 1.6667                  # 仅 Gamma 变体
+
+# ===== Helmholtz 专属 =====
+eos_coulombMult = 1.0             # Coulomb 修正系数（0=关）
+eos_tolerance = 1.e-8             # Newton 收敛容差
+eos_maxNewton = 50                # 最大 Newton 迭代
+eos_forceConstantInput = .false.  # 默认（Helmholtz 修改输入让自洽）
+eos_coulombAbort = .true.         # Coulomb 负压 abort
+
+# ===== Tabulated 专属（仅 +eos=Tabulated）=====
+# eos_useLogTables = .true.
+# eos_tabUseGeoSpace = .true.
+
+# ===== 3T 专属（仅 multiTemp）=====
+# eosMode = "dens_ie_recal_gather"  # 3T 推荐
+# eos_combinedTempRule = 2           # TEMP_VAR = T_ele
+# eos_smallEion = 1.e-10
+# eos_smallEele = 1.e-10
+# eos_smallErad = 1.e-10
+
+# ===== 3T per-component gamma =====
+# gammaIon = 1.6667                # 离子（5/3）
+# gammaEle = 1.6667                # 电子（5/3）
+# gammaRad = 1.3333                # 辐射（4/3，黑体）
+
+# ===== Heatexchange（3T 平衡）=====
+# useHeatexchange = .true.         # 默认开（+3t 自动）
+
+# ===== Hydro 单元的 EOS 模式覆盖 =====
+# hy_eosModeGc = "dens_temp"       # guard cell 用 dens_temp（快，不迭代）
+# hy_eosModeAfter = "dens_ie"      # Hydro 后用 dens_ie
+
+# ===== 性能 =====
+# threadEosWithinBlock = .true.    # OpenMP 并行（+threadWithinBlock 时）
+
+# ============================================================
+# 注意（L-009）：parfile 顶部 setup 注释可能不可信
+# 验证实际 setup 用：
+#   cat cases/<case>/setup_call
+# ============================================================
+
+# ============================================================
+# 验证（跑几步后看日志）：
+# grep "Eos_init\|eos_type\|Helmholtz\|table" 01-data/<basenm>.log | head -20
+#
+# 应看到：
+# - Eos_init: reading helm_table.dat（或 bdat）
+# - eos_type = EOS_HLM（或 EOS_GAM / EOS_MGAM / EOS_TAB / EOS_MTYPE）
+# - 表加载成功
+# ============================================================

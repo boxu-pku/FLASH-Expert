@@ -1,0 +1,125 @@
+# parfile-io-control.txt
+# LaserSlab 标准 IO 控制 parfile 片段
+# 参考 source/Simulation/SimulationMain/LaserSlab/example.par:L1-L34
+# 用法：cp 此片段到 flash.par 后调整值
+
+##########################
+#                        #
+#     I/O PARAMETERS     #
+#                        #
+##########################
+
+# 文件命名（basenm = base name）
+# - basenm 末尾的 _ 会保留
+# - stats_file 自动从 basenm 推导（lasslab_ → lasslab.dat）
+# - output_directory 默认空（当前目录），可设 "01-data/" 等
+basenm           = "lasslab_"
+output_directory = ""                  # 或 "01-data/"
+stats_file       = "lasslab.dat"       # 全局积分量文件（flash.dat 同义）
+log_file         = "lasslab.log"
+
+### Checkpoint Options（双精度续跑文件） ###
+
+# checkpointFileIntervalTime / Step 都是 OR 关系，任一满足触发
+# HEDP 典型：1000 步出一个 chk
+checkpointFileIntervalTime = 1.0       # 默认值（HEDP simTime ~1e-9 永远到不了 1.0，不触发）
+checkpointFileIntervalStep = 1000      # 每 1000 步出一个 chk
+
+# 墙钟触发（防队列到期）- 默认 43200s = 12h
+# SLURM 12h 队列建议设 36000（10h，留 2h 缓冲让 FLASH 优雅退出）
+wall_clock_checkpoint = 43200.         # 默认值，单跑 < 12h 不需要改
+
+# 滚动 checkpoint（只留最近 N 个）- 默认 10000（基本不限制）
+# 磁盘紧张时设小：rolling_checkpoint = 10
+rolling_checkpoint = 10000
+
+# RSS 限制（防内存吃爆节点）- 默认 -1 = 不限
+# 单位 MB；典型设节点物理内存 80%
+# rss_limit = 60000.                  # 60 GB
+
+### Plot Options（单精度可视化文件） ###
+
+# HEDP 典型：100 步出一个 plotfile
+plotFileNumber       = 0               # 初始 plotfile 编号
+plotFileIntervalStep = 100             # 每 100 步
+plotFileIntervalTime = 0.01e-09        # 10 ps（备份触发，防 step 跳过）
+
+# plot_var_N - cell-centered unk 名（最多 12 个）
+# 名字必须小写，必须是 unk 名（4 字符，后补空格）
+# LaserSlab 标准 HEDP 可视化变量：
+plot_var_1           = "dens"          # 密度
+plot_var_2           = "depo"          # 激光沉积率
+plot_var_3           = "tele"          # 电子温度
+plot_var_4           = "tion"          # 离子温度
+plot_var_5           = "trad"          # 辐射温度
+plot_var_6           = "ye  "          # 电子分数（注意补空格到 4 字符）
+plot_var_7           = "sumy"          # 总离子数密度
+plot_var_8           = "cham"          # cham (CH) 物质分数
+plot_var_9           = "targ"          # targ (CHBr) 物质分数
+# plot_var_10..12 默认 "none"
+
+# plot_grid_var_N - scratch GRIDVAR 名（用户 Config 里声明的）
+# 默认全 "none"，HEDP 一般不用
+# plot_grid_var_1 = "vrtz"
+
+### Restart Options ###
+
+restart              = .false.         # 默认全新跑；续跑改 .true.
+checkpointFileNumber = 0               # restart 时设为要读的 chk 编号
+
+### 全局积分量（flash.dat / lasslab.dat）###
+
+# 每 N 步写一行
+wr_integrals_freq    = 1               # 默认每步（IO 代价小，数据保真）
+
+# 是否含每个 mass scalar 积分（cham 重量 / targ 重量等）
+io_writeMscalarIntegrals = .false.     # 默认只 7 基础量
+
+### 高级控制（一般不改）###
+
+# alwaysRestrictCheckpoint: 写 chk 前是否强制 restrict 全树
+# 默认 true（数据全树自洽，可视化好）；调试时改 false 省 restrict 时间
+alwaysRestrictCheckpoint = .true.
+
+# alwaysComputeUserVars: 写 chk 前是否算 user var
+# 默认 true；改 false 时 plotfile 也省（IO_writePlotfile 总是算）
+alwaysComputeUserVars = .true.
+
+# summaryOutputOnly: 只写 flash.dat，不出 chk / plt（调试用）
+summaryOutputOnly = .false.
+
+# appendParRestart: 写 chk 时自动追加 restart 行到 parfile
+# 默认 false；想全自动续跑改 true
+appendParRestart = .false.
+
+### HDF5 模式 ###
+
+# useCollectiveHDF5: 用 collective IO（vs independent）
+# 默认 true（快 5-10x）；NoFBS UG 会强制 false（会死锁）
+useCollectiveHDF5 = .true.
+
+# typeMatchedXfer: 浮点类型匹配（防 HDF5 revert 到 independent）
+typeMatchedXfer = .true.
+
+# fileFormatVersion: HDF5 plotfile 格式版本（当前 9，不要改）
+fileFormatVersion = 9
+
+# chkGuardCells: 是否写 guard cell 到 chk（默认 false，省盘）
+# 仅 PM parallel 支持（LaserSlab 的 PM_argonne 是其变体）
+chkGuardCellsInput  = .false.
+chkGuardCellsOutput = .false.
+
+### PM_argonne 专属（type-based IO）###
+
+# packMesh*: 是否把数据 pack 到连续缓冲再 collective 写
+# plotfile 数据小，pack 代价小，默认 true
+# checkpoint 数据大，pack 代价大，默认 false
+packMeshPlotWriteHDF5 = .true.
+packMeshChkWriteHDF5  = .false.
+packMeshChkReadHDF5   = .false.
+
+### 多文件输出（HEDP 罕用）###
+
+# outputSplitNum: 多少进程一组写一个文件
+# 默认 1（单文件）；进程数必须整除此值
+outputSplitNum = 1

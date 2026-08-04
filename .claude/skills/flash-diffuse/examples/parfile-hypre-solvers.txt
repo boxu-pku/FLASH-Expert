@@ -1,0 +1,146 @@
+# ============================================================
+# FLASH 4.8 HYPRE 5 种求解器配置对比
+# ============================================================
+# 对应知识库：.claude/skills/flash-diffuse/knowledge/recipes.md §5
+#
+# 这是参考文档，不是直接复制到 parfile 的配置。
+# 按场景选一种求解器，把对应段复制到 flash.par。
+# ============================================================
+
+# ============================================================
+# 选项 1：HYPRE_PCG + HYPRE_AMG（默认，推荐中小网格）
+# ============================================================
+# 适用：标准扩散方程（对称正定矩阵），网格 < 1M cells
+# 收敛速度：快（CG 对称正定最优）
+# 内存：中（PCG 存 5+ 向量 + AMG 层次）
+# 何时换：不收敛（非对称）或内存不够（大网格）
+
+gr_hypreSolverType = "HYPRE_PCG"
+gr_hyprePCType     = "HYPRE_AMG"     # BoomerAMG 预条件
+gr_hypreMaxIter    = 500
+gr_hypreRelTol     = 1.0e-8
+gr_hypreMinIter    = 0               # PCG 忽略
+# PCG 专属（高级，通常不用改）：
+# gr_hypreUse2Norm          = .false.
+# gr_hypreCfTol             = 0.0
+# gr_hypreRecomputeResidual = .false.
+# gr_hypreRelChange         = .false.
+
+
+# ============================================================
+# 选项 2：HYPRE_AMG（直接 BoomerAMG，推荐大网格）
+# ============================================================
+# 适用：> 1M cells 大规模算例，LaserSlab 标准
+# 收敛速度：中（多重网格 O(N) 步）
+# 内存：大（AMG 多层次，但避免 PCG 双重存储）
+# 何时换：极小问题（PCG 更快）或 AMG 内部失败
+
+gr_hypreSolverType = "HYPRE_AMG"
+# 注意：PCType 在 AMG 独立时被忽略
+gr_hypreMaxIter    = 1000            # 大网格要更多迭代
+gr_hypreRelTol     = 1.0e-6          # 放宽（物理精度够）
+# AMG 内部参数（硬编码在 gr_hypreSetupSolver.F90，不可改）：
+#   CoarsenType=10, InterpType=6, RelaxType=6, NumSweeps=1
+
+
+# ============================================================
+# 选项 3：HYPRE_BICGSTAB + HYPRE_AMG（非对称矩阵）
+# ============================================================
+# 适用：flux limiter 让矩阵非对称，各向异性扩散
+# 收敛速度：中（2 倍 PCG work/iter）
+# 内存：中
+# 何时换：PCG 不收敛 / 矩阵非对称
+
+gr_hypreSolverType = "HYPRE_BICGSTAB"
+gr_hyprePCType     = "HYPRE_AMG"
+gr_hypreMaxIter    = 1000
+gr_hypreRelTol     = 1.0e-8
+
+
+# ============================================================
+# 选项 4：HYPRE_GMRES + HYPRE_AMG（最难收敛）
+# ============================================================
+# 适用：BiCGSTAB 也不收敛的极端问题
+# 收敛速度：慢但稳
+# 内存：大（k 维 Krylov 子空间，k 默认 30）
+# 何时换：兜底选择，正常情况不用
+
+gr_hypreSolverType = "HYPRE_GMRES"
+gr_hyprePCType     = "HYPRE_AMG"
+gr_hypreMaxIter    = 2000
+gr_hypreRelTol     = 1.0e-6
+gr_hypreMinIter    = 5               # GMRES 至少迭代 5 步
+
+
+# ============================================================
+# 选项 5：HYPRE_HYBRID（旧版推荐，新版用 PCG+AMG 取代）
+# ============================================================
+# 适用：旧 HYPRE 版本（< 2.10），新版不推荐
+# 收敛速度：自适应（DSCG → AMG-PCG 自动切换）
+# 内存：中
+# 何时换：用 PCG+AMG 代替（更可控）
+
+gr_hypreSolverType = "HYPRE_HYBRID"
+gr_hypreMaxIter    = 500
+gr_hypreRelTol     = 1.0e-8
+
+
+# ============================================================
+# 预条件子（PC）选择（独立于求解器）
+# ============================================================
+
+# PC = HYPRE_AMG（默认，推荐）
+#   适用：扩散方程（多重网格近似 A⁻¹ 最优）
+#   收敛：快几个数量级（vs 无 PC）
+gr_hyprePCType = "HYPRE_AMG"
+
+# PC = HYPRE_ILU（Euclid 不完全 LU）
+#   适用：中小问题，调试
+#   优点：简单
+#   缺点：扩展性不如 AMG
+gr_hyprePCType = "HYPRE_ILU"
+
+# PC = HYPRE_PARASAILS（稀疏近似逆）
+#   适用：大规模并行
+#   优点：并行扩展好
+#   缺点：参数敏感
+gr_hyprePCType = "HYPRE_PARASAILS"
+
+# PC = HYPRE_NONE（无预条件）
+#   适用：调试（看求解器本身性能）
+#   缺点：收敛慢
+gr_hyprePCType = "HYPRE_NONE"
+
+
+# ============================================================
+# 诊断 / 调试参数
+# ============================================================
+
+# 打印 HYPRE 求解信息（每次 Diffuse 调用）
+# ★ 调试 HYPRE 不收敛时必开
+gr_hyprePrintSolveInfo = .true.
+gr_hypreInfoLevel      = 2     # 2 = 详细（每次迭代残差）
+
+# 数值保护
+gr_hypreUseFloor = .true.     # 对输出做 floor（避免小负值）
+gr_hypreFloor    = 1.0e-12
+gr_hypreUseMagFloor = .false.  # 磁扩散不 floor（磁场可正负）
+
+
+# ============================================================
+# 收敛诊断（运行后看日志）
+# ============================================================
+#
+# 跑完后用以下命令看 HYPRE 表现：
+#
+# grep "num_iterations" cases/<case>/01-data/<basenm>.log | head -20
+# # 每步迭代数（< 100 = 健康，> 500 = 可能问题）
+#
+# grep "final_res_norm" cases/<case>/01-data/<basenm>.log | head -20
+# # 每步最终残差（< 1e-8 = 收敛，> 1e-3 = 不收敛）
+#
+# grep "Nonconv" cases/<case>/01-data/<basenm>.log
+# # 不收敛警告（如有，见 pitfalls.md §A）
+#
+# grep "ierr" cases/<case>/01-data/<basenm>.log
+# # HYPRE 错误码（!= 0 = 库错误）

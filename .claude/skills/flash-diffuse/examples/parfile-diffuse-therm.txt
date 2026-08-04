@@ -1,0 +1,69 @@
+# ============================================================
+# FLASH 4.8 Diffuse 热传导完整 parfile 片段
+# ============================================================
+# 对应知识库：.claude/skills/flash-diffuse/knowledge/recipes.md §2
+#
+# 适用：LaserSlab HEDP 标准配置（电子热传导）
+# 把这段（去掉 # 注释）复制到 flash.par 顶层（不在任何 sourceTerm 段）
+# ============================================================
+
+# === Diffuse 主控 ===
+useDiffuse       = .true.
+useDiffuseTherm  = .true.
+diff_useEleCond  = .true.         # 启用电子热传导（3T）
+# diff_useIonCond = .false.       # 离子热传导（HEDP 通常关，离子温度变化慢）
+diffusion_cutoff_density = 1.e-5  # HEDP 推荐（默认 1e-30 太松，真空区会奇异）
+
+# === θ + flux limiter（LaserSlab 经典配置）===
+diff_thetaImplct = 1.0            # 后向 Euler，无条件稳定
+                                    # ★ 为什么不用 0.5：HEDP 陡梯度 CN 会震荡
+diff_eleFlMode   = "fl_larsen"    # Larsen 平滑过渡（HEDP 标准）
+                                    # ★ 必须显式设！默认 fl_none 危险（超光速）
+diff_eleFlCoef   = 0.06           # 6% 自由流（HEDP 经验值）
+                                    # ★ 为什么 0.06：Spitzer 高估低密度区电导率
+
+# === 边界条件（6 面，2D R-Z）===
+diff_eleXlBoundaryType = "neumann"   # 左（r=0 轴）零梯度（轴对称）
+diff_eleXrBoundaryType = "neumann"   # 右（出靶面）
+diff_eleYlBoundaryType = "vacuum"    # ★ 底（激光进入方向，真空让热逃）
+diff_eleYrBoundaryType = "neumann"   # 顶（出靶面）
+diff_eleZlBoundaryType = "neumann"   # 3D 用（2D 忽略）
+diff_eleZrBoundaryType = "neumann"
+
+# === dt 限制 ===
+# ★ HEDP 隐式不需要 dt 限制，禁用避免步数过多
+dt_diff_factor = 1.0e+100
+
+# === HYPRE ===
+gr_hypreSolverType     = "HYPRE_AMG"   # 直接 BoomerAMG（LaserSlab 标准）
+                                          # ★ 为什么不用 PCG：超大问题避免双重存储
+gr_hyprePCType         = "HYPRE_AMG"   # （AMG 独立时 PCType 忽略）
+gr_hypreMaxIter        = 500            # 默认（HEDP 通常够）
+gr_hypreRelTol         = 1.0e-8         # 默认（HEDP 物理精度够）
+gr_hyprePrintSolveInfo = .true.         # ★ 调试用：看 num_iterations / final_res_norm
+gr_hypreFloor          = 1.0e-12        # 防 HYPRE 输出小负值
+gr_hypreUseFloor       = .true.
+
+# ============================================================
+# 不同物理场景的调整：
+#
+# 1T 教学（简单热传导）：
+#   diff_thetaImplct = 0.5         # Crank-Nicolson 2 阶
+#   diff_eleFlMode   = "fl_none"   # 教学无超光速
+#   dt_diff_factor   = 0.5         # 保守
+#   gr_hypreSolverType = "HYPRE_PCG"  # 默认
+#
+# 3D 大规模（>1M cells）：
+#   gr_hypreMaxIter = 2000         # 翻倍
+#   gr_hypreRelTol  = 1.0e-6       # 放宽
+#   gr_hypreAbsTol  = 1.0e-20      # 防 b 范数大
+#
+# MHD 各向异性：
+#   # setup 加 SupportAnisoCond
+#   diff_anisoCondForEle = .true.
+#   gr_hypreSolverType = "HYPRE_BICGSTAB"  # 非对称矩阵
+# ============================================================
+
+# 验证 HYPRE 是否生效（运行后看日志）：
+# grep -E "HYPRE SOLVE|num_iterations|final_res_norm" cases/<case>/01-data/<basenm>.log
+# 应看到每次 Diffuse 调用的迭代数和残差，确认收敛

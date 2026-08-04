@@ -1,0 +1,129 @@
+# parfile-material-laserslab.txt
+#
+# LaserSlab 完整物质属性 parfile 片段
+# 来源：source/Simulation/SimulationMain/LaserSlab/flash.par:L41-L74, L162-L175, L238-L254
+#
+# 使用方法：
+#   1. 复制到你的算例的 flash.par
+#   2. 根据需要修改物质名（cham/targ → 你的 species）
+#   3. 修改表文件名（al-imx-003.cn4 → 你的 .cn4 文件）
+
+############################
+# RADIATION/OPACITY PARAMETERS
+############################
+rt_useMGD       = .true.
+rt_mgdNumGroups = 6
+
+# 群边界（eV）—— 必须和 .cn4 表的群边界一致（容差 1e-8 eV）
+rt_mgdBounds_1  = 1.0e-01
+rt_mgdBounds_2  = 1.0e+00
+rt_mgdBounds_3  = 1.0e+01
+rt_mgdBounds_4  = 1.0e+02
+rt_mgdBounds_5  = 1.0e+03
+rt_mgdBounds_6  = 1.0e+04
+rt_mgdBounds_7  = 1.0e+05
+
+# MGD 通量限制器（harmonic = sum of fluxes）
+rt_mgdFlMode    = "fl_harmonic"
+rt_mgdFlCoef    = 1.0
+
+# 辐射边界条件
+rt_mgdXlBoundaryType = "reflecting"
+rt_mgdXrBoundaryType = "vacuum"
+rt_mgdYlBoundaryType = "vacuum"
+rt_mgdYrBoundaryType = "reflecting"
+rt_mgdZlBoundaryType = "reflecting"
+rt_mgdZrBoundaryType = "reflecting"
+
+# 启用 Opacity 单元
+useOpacity     = .true.
+
+### SET CHAMBER (HELIUM) OPACITY OPTIONS ###
+# 必须配齐三种：PA（吸收）/ PE（发射）/ RO（输运），缺一 abort
+op_chamAbsorb   = "op_tabpa"
+op_chamEmiss    = "op_tabpe"
+op_chamTrans    = "op_tabro"
+op_chamFileType = "ionmix4"           # 主流格式
+op_chamFileName = "he-imx-005.cn4"     # 数据文件（必须在 objdir 中）
+
+### SET TARGET (ALUMINUM) OPACITY OPTIONS ###
+op_targAbsorb   = "op_tabpa"
+op_targEmiss    = "op_tabpe"
+op_targTrans    = "op_tabro"
+op_targFileType = "ionmix4"
+op_targFileName = "al-imx-003.cn4"
+
+
+############################
+# CONDUCTION PARAMETERS
+############################
+useDiffuse      = .true.
+useConductivity = .true.
+diff_useEleCond = .true.                # 启用电子热传导（3T 必需）
+
+# 通量限制器（Larsen 形式，ICF 标准系数 0.06）
+diff_eleFlMode  = "fl_larsen"
+diff_eleFlCoef  = 0.06
+
+# 隐式度（1.0 = 全隐式，HYPRE 求解）
+diff_thetaImplct = 1.0
+
+# 电子热传导边界条件
+diff_eleXlBoundaryType = "neumann"
+diff_eleXrBoundaryType = "neumann"
+diff_eleYlBoundaryType = "vacuum"
+diff_eleYrBoundaryType = "neumann"
+diff_eleZlBoundaryType = "neumann"
+diff_eleZrBoundaryType = "neumann"
+
+
+############################
+# MATERIAL DEFINITIONS (Multispecies)
+############################
+# 物质属性 + EOS 配套
+
+# Target (Aluminum):
+ms_targA = 26.9815386                  # 原子量
+ms_targZ = 13.0                        # 原子序数
+ms_targZMin = 0.02                     # 最小电离度（防全中性导致 ln Λ 发散）
+eos_targEosType = "eos_tab"            # 表格 EOS
+eos_targSubType = "ionmix4"
+eos_targTableFile = "al-imx-003.cn4"   # 通常和 Opacity 表同源
+
+# Chamber (Helium):
+ms_chamA = 4.002602
+ms_chamZ = 2.0
+# ms_chamZMin 默认（如发散显式设）
+eos_chamEosType = "eos_tab"
+eos_chamSubType = "ionmix4"
+eos_chamTableFile = "he-imx-005.cn4"
+
+
+############################
+# TIME STEP CONTROL
+############################
+# 这些参数控制物质属性相关的 dt 限制
+dt_diff_factor = 1.0e+100              # 禁用 diffusion dt（让 hydro dt 主导）
+rt_dtFactor    = 0.02                  # RadTrans/MGD dt 因子
+hx_dtFactor    = 1.0e+100              # Heatexchange dt 因子（LaserSlab 设大禁用）
+
+
+############################
+# NOTES
+############################
+# 1. setup 必须 REQUESTS：
+#    - physics/materialProperties/Conductivity/ConductivityMain/SpitzerHighZ
+#    - physics/materialProperties/Opacity/OpacityMain/Multispecies
+#    - physics/Diffuse/DiffuseMain/Unsplit
+#    - physics/sourceTerms/Heatexchange/HeatexchangeMain/Spitzer
+#    LaserSlab Config 已自动 REQUESTS（见 source/Simulation/SimulationMain/LaserSlab/Config:L11）
+#
+# 2. 数据文件必须放到 objdir（通过 Config DATAFILES 指令）
+#    DATAFILES al-imx-003.cn4
+#    DATAFILES he-imx-005.cn4
+#
+# 3. 群边界 rt_mgdBounds_* 必须和 .cn4 表的群边界一致（容差 1e-8 eV）
+#    否则启动时 abort
+#
+# 4. op_<spec>Absorb/Emiss/Trans 三种都必须配
+#    缺任一会 abort: [opacity_init] bad opacity kind

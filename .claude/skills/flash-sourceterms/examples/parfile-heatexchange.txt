@@ -1,0 +1,75 @@
+# ============================================================
+# FLASH 4.8 parfile Heatexchange 配置片段
+# ============================================================
+# 对应知识库：.claude/skills/flash-sourceterms/knowledge/recipes.md
+#
+# 把这段加到 flash.par 顶层（不在任何 sourceTerm 段）
+# 适合 LaserSlab HEDP 算例的"安全配置"
+# ============================================================
+
+# ===== 主控 =====
+useHeatexchange = .true.
+
+# ===== 时间步（LaserSlab 标准：禁用 HX dt 限制）=====
+hx_dtFactor = 1.0e+100            # ★ LaserSlab 标准；eqtime << dt_hydro 时禁用合理
+                                   # 默认 0.5（每步最多交换一半内能）
+
+# ===== Spitzer 变体专属（LaserSlab 默认变体）=====
+hx_ieTimeCoef = 1.0               # eqtime 倍数（默认 1.0）
+hx_relTol = -1.0                  # 负值 = 继承 eos_tolerance
+
+# ===== 日志 =====
+hx_logLevel = 700                 # 默认（HX_LOGLEVEL_INFO_FALLBACK = 500 之上的值）
+
+# ===== Constant 变体专属（仅 --with-unit=...Constant 时用）=====
+# hx_couplingConst12 = 1.0        # 离子-电子耦合系数
+# hx_couplingConst13 = 0.0        # 离子-辐射
+# hx_couplingConst23 = 1.0        # 电子-辐射
+
+# ===== ConstCoulomb 变体专属（简化 Spitzer）=====
+# hx_coulombLog = 5.0             # 固定 ln Λ 值
+# hx_singleSpeciesA = 27.0        # 单物质 A（Al）
+# hx_singleSpeciesZ = 13.0        # 单物质 Z（Al）
+
+# ===== Immediate 变体专属（调试，强制 T_ion = T_ele）=====
+# hx_applyToRadiation = .false.   # 只平衡 TEION/TELE，不动 TRAD
+
+# ============================================================
+# 重要陷阱（按 L-011）：
+#
+# 1. hxcouple 参数不存在！
+#    FLASH 4.8 没有 hxcouple（用户提示中可能误称）
+#    正确名：hx_couplingConst12（Constant 变体）/ hx_coulombLog（ConstCoulomb）
+#           hx_ieTimeCoef（Spitzer/LeeMore）
+#
+# 2. useHeatexchange 默认 FALSE（顶层）
+#    parfile 必须显式开
+#
+# 3. Heatexchange 必须配 3T EOS（+uhd3t / +3t）
+#    单温度模式下 T_ion = T_ele 永远成立，Heatexchange 没意义
+#
+# 4. Immediate 变体物理失真（忽略 ps 时间尺度）
+#    仅调试用，不要生产
+#
+# 5. hx_dtFactor = 1e100 是 LaserSlab 故意禁用（不是 bug）
+#    eqtime << dt_hydro 时合理
+#
+# 6. Heatexchange/Spitzer 不耦合 TRAD_VAR
+#    辐射-电子平衡由 RadTrans/MGD 处理
+# ============================================================
+
+# ============================================================
+# 注意（L-009）：parfile 顶部 setup 注释可能不可信
+# 验证实际 setup 用：
+#   cat cases/<case>/setup_call
+# ============================================================
+
+# ============================================================
+# 验证（跑几步后看日志）：
+# grep "Heatexchange\|hx_\|Spitzer" 01-data/<basenm>.log | head -20
+#
+# 应看到：
+# - Heatexchange_init: useHeatexchange = T
+# - Spitzer 变体激活
+# - hx_dtFactor 值（1e100 或 0.5）
+# ============================================================

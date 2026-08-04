@@ -1,0 +1,95 @@
+# ============================================================
+# FLASH 4.8 parfile MGD（多群扩散）配置片段
+# ============================================================
+# 对应知识库：.claude/skills/flash-radtrans/knowledge/recipes.md
+#
+# 把这段加到 flash.par 顶层（不在任何 sourceTerm 段）
+# 适合 LaserSlab HEDP 算例的"安全配置"
+# ============================================================
+
+# ===== 主控 =====
+rt_useMGD = .true.
+
+# ===== 群结构（LaserSlab 标准：6 群，5-decade 对数）=====
+rt_mgdNumGroups = 6
+
+# 群边界（单位 eV！不是 erg）
+rt_mgdBounds_1 = 1.e-1      # 0.1 eV（远红外）
+rt_mgdBounds_2 = 1.e0       # 1 eV（红外）
+rt_mgdBounds_3 = 1.e1       # 10 eV（可见/紫外）
+rt_mgdBounds_4 = 1.e2       # 100 eV（软 X 射线）
+rt_mgdBounds_5 = 1.e3       # 1 keV（X 射线）
+rt_mgdBounds_6 = 1.e4       # 10 keV（硬 X 射线）
+rt_mgdBounds_7 = 1.e5       # 100 keV（伽马）
+
+# ===== Flux limiter（HEDP 必须）=====
+rt_mgdFlMode = "fl_harmonic"      # ★ HEDP 推荐（不是默认！默认 fl_none 危险）
+rt_mgdFlCoef = 1.0                # 限流系数倍数
+
+# ===== 边界条件（LaserSlab 典型）=====
+rt_mgdXlBoundaryType = "reflecting"     # 激光入射侧（轴对称）
+rt_mgdXrBoundaryType = "vacuum"          # 靶背（辐射自由流出）
+rt_mgdYlBoundaryType = "vacuum"          # 靶侧（开放）
+rt_mgdYrBoundaryType = "reflecting"      # 对称
+rt_mgdZlBoundaryType = "reflecting"      # 2D Z 退化维
+rt_mgdZrBoundaryType = "reflecting"
+
+# Dirichlet 边界温度（仅 BC 类型为 dirichlet 时用）
+# rt_mgdXlBoundaryTemp = 1.e6           # K
+
+# ===== 隐式时间步（HEDP 默认）=====
+rt_mgdthetaImplct = 1.0           # ★ 全后向 Euler（无条件稳定）
+
+# 时间步控制（默认 rt_computeDt=.false.，rt_dtFactor 不生效）
+rt_dtFactor = 0.02                # LaserSlab 标准（仅参考）
+
+# rt_computeDt = .false.          # 默认（隐式不需要辐射 dt 限制）
+
+# ===== 性能（可选）=====
+# rt_timeGroups = .false.         # 每群计时器（profile 用）
+# rt_groupBarrier = .false.       # 群间 MPI_Barrier
+
+# ===== Unified 变体专属（实验性，不推荐生产用）=====
+# rt_mgdthetaC = -1.0             # -1 = 用 rt_mgdthetaImplct
+# rt_mgdthetaD = 0.5
+# rt_tightIonCoupling = .false.
+
+# ===== ExpRelax 变体专属（罕用）=====
+# rt_expRelaxMaxIter = 3
+
+# ============================================================
+# 重要陷阱（按 L-011）：
+#
+# 1. rt_mgdFlMode 默认 "fl_none" 危险！
+#    生产算例必须显式设为 "fl_harmonic"（或 fl_larsen 等）
+#
+# 2. rt_mgdBounds_* 单位是 eV（不是 erg）
+#    1.e-1 表示 0.1 eV，不是 0.1 erg
+#
+# 3. mgd_meshgroups 是 setup 期变量（不是 parfile 参数）
+#    在 setup 命令加 mgd_meshgroups=N
+#
+# 4. rt_mgdBounds_* 数量 = N+1（N 群需要 N+1 个边界）
+#
+# 5. MGD 群边界必须和 IONMIX 不透明度表手动对齐
+#    不对齐 → 物理静默错误（不 abort，但结果错）
+#
+# 6. operator-split MGD 不应用辐射压力到 Hydro（PRAD_VAR）
+#    辐射主导激波算例需要 Unified 变体（实验性）
+# ============================================================
+
+# ============================================================
+# 注意（L-009）：parfile 顶部 setup 注释可能不可信
+# 验证实际 setup 用：
+#   cat cases/<case>/setup_call
+# ============================================================
+
+# ============================================================
+# 验证（跑几步后看日志）：
+# grep "RadTrans_init\|rt_useMGD\|mgdNumGroups\|HYPRE" 01-data/<basenm>.log | head -20
+#
+# 应看到：
+# - RadTrans_init: rt_useMGD = T
+# - Group bounds loaded (6 groups)
+# - HYPRE solver iterations per group
+# ============================================================

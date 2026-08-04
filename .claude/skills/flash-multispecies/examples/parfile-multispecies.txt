@@ -1,0 +1,216 @@
+# ──────────────────────────────────────────────────────────────────────────
+# parfile-multispecies.txt
+#
+# Multispecies 完整 parfile 物种段参考。
+# 含 3 个场景：双物质 / 多层靶 / 多元素物质。
+# 可直接 cp 到 case 目录作为 flash.par 物种段。
+# ──────────────────────────────────────────────────────────────────────────
+#
+# setup 命令（必须传 species= 才能让下面参数生效）：
+#
+#   ./setup LaserSlab -2d -auto +cylindrical -nxb=16 -nyb=16 \
+#     +hdf5typeio species=cham,targ +mtmmmt +laser +uhd3t +mgd mgd_meshgroups=6 \
+#     -objdir=cases/LaserSlab -parfile=example.par
+#
+# 编译期宏（setup 后自动定义，验证）：
+#   grep -E 'FLASH_MULTISPECIES|NSPECIES|MS_MAXELEMS|CHAM_SPEC|TARG_SPEC' \
+#     cases/<case>/setup_defines
+#
+# ──────────────────────────────────────────────────────────────────────────
+
+
+# ════════════════════════════════════════════════════════════════════════
+# 场景 1：LaserSlab 双物质（cham = He 真空腔 + targ = Al 靶）
+# 最小可运行 HEDP 配置
+# ════════════════════════════════════════════════════════════════════════
+
+# ─── cham 物质：He 真空腔气体 ───
+ms_chamA          = 4.002602            # He 原子质量数（必填）
+ms_chamZ          = 2.0                 # He 原子序数（必填）
+ms_chamZMin       = 0.02                # 离子化下限（推荐，防除零）
+
+# 多元素（这里 cham 是纯元素，留默认）
+# ms_chamNumElems  = 0                  # 默认 0 = 纯元素
+# ms_chamZElems_1  = -999               # 默认
+# ms_chamAElems_1  = -999.              # 默认
+# ms_chamFractions_1 = -999.            # 默认
+
+# EOS 表绑定
+eos_chamEosType   = "eos_tab"           # 表 EOS（HEDP 标准）
+eos_chamSubType   = "ionmix4"           # IONMIX4 格式（主流）
+eos_chamTableFile = "he-imx-005.cn4"    # EOS 表文件
+# eos_chamGroupName = "-none-"          # 默认（一文件一物质）
+# eos_chamSesDblFmt = "E22.15"          # 默认（SESAME 才用）
+
+# Opacity 表绑定
+op_chamAbsorb     = "op_tabpa"          # Planck 吸收
+op_chamEmiss      = "op_tabpe"          # Planck 发射
+op_chamTrans      = "op_tabro"          # Rosseland 传输
+op_chamFileType   = "ionmix4"
+op_chamFileName   = "he-imx-005.cn4"
+op_chamLowTemp    = 0.0                 # 默认（不启用低温度阈值）
+
+# ─── targ 物质：Al 靶 ───
+ms_targA          = 26.9815386          # Al 原子质量数
+ms_targZ          = 13.0                # Al 原子序数
+ms_targZMin       = 0.02
+
+eos_targEosType   = "eos_tab"
+eos_targSubType   = "ionmix4"
+eos_targTableFile = "al-imx-003.cn4"
+
+op_targAbsorb     = "op_tabpa"
+op_targEmiss      = "op_tabpe"
+op_targTrans      = "op_tabro"
+op_targFileType   = "ionmix4"
+op_targFileName   = "al-imx-003.cn4"
+
+
+# ════════════════════════════════════════════════════════════════════════
+# 场景 2：Sunliang_laser_CH 多层靶（4 种物质）
+# setup: species=cham,targ1,targ2,targ3
+# ════════════════════════════════════════════════════════════════════════
+
+# cham 同场景 1（He 真空腔气体）
+# ... (复用上面的 ms_chamA / eos_cham* / op_cham*)
+
+# targ1: CH 塑料（最外层）
+ms_tar1A          = 13                  # CH 等效 A（按 EOS 表内部约定）
+ms_tar1Z          = 6                   # CH 等效 Z
+ms_tar1ZMin       = 0.02
+eos_tar1EosType   = "eos_tab"
+eos_tar1SubType   = "ionmix4"
+eos_tar1TableFile = "polystyrene-imx-008.cn4"
+
+op_tar1Absorb     = "op_tabpa"
+op_tar1Emiss      = "op_tabpe"
+op_tar1Trans      = "op_tabro"
+op_tar1FileType   = "ionmix4"
+op_tar1FileName   = "polystyrene-imx-008.cn4"
+
+# targ2: CHBr 掺杂层（中层）
+ms_tar2A          = 13
+ms_tar2Z          = 6
+ms_tar2ZMin       = 0.02
+eos_tar2EosType   = "eos_tab"
+eos_tar2SubType   = "ionmix4"
+eos_tar2TableFile = "chBr-hyades.cn4"
+
+op_tar2Absorb     = "op_tabpa"
+op_tar2Emiss      = "op_tabpe"
+op_tar2Trans      = "op_tabro"
+op_tar2FileType   = "ionmix4"
+op_tar2FileName   = "CHBr-opacity.cn4"
+
+# targ3: CH 塑料（内层，物理同 targ1 但分开追踪）
+ms_tar3A          = 13
+ms_tar3Z          = 6
+ms_tar3ZMin       = 0.02
+eos_tar3EosType   = "eos_tab"
+eos_tar3SubType   = "ionmix4"
+eos_tar3TableFile = "polystyrene-imx-008.cn4"
+
+op_tar3Absorb     = "op_tabpa"
+op_tar3Emiss      = "op_tabpe"
+op_tar3Trans      = "op_tabro"
+op_tar3FileType   = "ionmix4"
+op_tar3FileName   = "polystyrene-imx-008.cn4"
+
+
+# ════════════════════════════════════════════════════════════════════════
+# 场景 3：多元素物质（CH 塑料按元素构成）
+# setup: species=cham,ch
+# ════════════════════════════════════════════════════════════════════════
+
+# cham 同场景 1（He 真空腔，纯元素）
+
+# ch: CH 塑料（多元素描述，2 种元素）
+ms_chA            = 10.4                # 可省略（留 -999. 让 dot_product 自动算）
+ms_chZ            = 5.43                # 可省略
+ms_chZMin         = 0.02
+
+ms_chNumElems     = 2                   # 2 种元素（必填）
+
+# 元素 1：碳（C）
+ms_chZElems_1     = 6                   # C 的原子序数
+ms_chAElems_1     = 12                  # C-12 的原子质量数
+ms_chFractions_1  = 0.857               # C 在 CH 里的质量分数
+
+# 元素 2：氢（H）
+ms_chZElems_2     = 1                   # H 的原子序数
+ms_chAElems_2     = 1                   # H-1 的原子质量数
+ms_chFractions_2  = 0.143               # H 在 CH 里的质量分数
+
+# 注意：Fractions 不必 Σ=1，Multispecies_init 会自动归一化
+# 上面 0.857 + 0.143 = 1.0（已归一），但写 0.5/0.6 也会被自动归一为 0.4545/0.5455
+
+# EOS 表（同 targ 路径）
+eos_chEosType     = "eos_tab"
+eos_chSubType     = "ionmix4"
+eos_chTableFile   = "polystyrene-imx-008.cn4"
+
+op_chAbsorb       = "op_tabpa"
+op_chEmiss        = "op_tabpe"
+op_chTrans        = "op_tabro"
+op_chFileType     = "ionmix4"
+op_chFileName     = "polystyrene-imx-008.cn4"
+
+
+# ════════════════════════════════════════════════════════════════════════
+# Simulation_initBlock 初始条件（参考 LaserSlab）
+# 这些不是 Multispecies 参数，但和物种初始化紧密相关
+# ════════════════════════════════════════════════════════════════════════
+
+# cham 区域（真空腔）
+sim_rhoCham       = 1.0e-6              # g/cc（极低密度气体）
+sim_teleCham      = 50.0                # K（电子温度）
+sim_tionCham      = 50.0                # K（离子温度）
+sim_tradCham      = 50.0                # K（辐射温度）
+
+# targ 区域（靶）
+sim_rhoTarg       = 2.7                 # g/cc（Al 实际密度）
+sim_teleTarg      = 50.0
+sim_tionTarg      = 50.0
+sim_tradTarg      = 50.0
+
+# 几何（决定哪部分 cell 是 cham / targ）
+sim_initGeom      = "slab"              # 或 "sphere"
+sim_targetRadius  = 0.0050              # 靶半径（cm）
+sim_targetHeight  = 0.0250              # 靶高度（cm）
+sim_vacuumHeight  = 0.0250              # 真空腔高度（cm）
+
+# 质量分数初始化的小值（避免除零）
+sim_smallX        = 1.0e-10             # 默认 1e-10
+
+
+# ════════════════════════════════════════════════════════════════════════
+# 验证 checklist
+# ════════════════════════════════════════════════════════════════════════
+#
+# 跑算例后检查：
+#
+# 1. setup 生成的物种宏（编译期）
+#    grep -E 'FLASH_MULTISPECIES|NSPECIES|MS_MAXELEMS|CHAM_SPEC|TARG_SPEC' \
+#      cases/<case>/setup_defines
+#
+# 2. Multispecies_list 打印的运行时物种数据库
+#    grep -A 30 'Initially defined values of species' 01-data/<basenm>.log
+#
+#    应看到：
+#      Name  Index   Total    Positive  ...
+#      cham    16    4.00E+00 2.00E+00  ...
+#      targ    17    2.70E+01 1.30E+01  ...
+#
+# 3. 多元素段（仅 NumElems>0 时打印）
+#    grep -A 5 'ch      2 constituents' 01-data/<basenm>.log
+#
+#    应看到：
+#      #  Z    A       Frac
+#        6   12  8.57E-01
+#        1    1  1.43E-01
+#
+# 4. plotfile 里物种变量
+#    python -c "import h5py; f=h5py.File('<plotfile>'); print(list(f.keys()))"
+#    应看到 'cham'、'targ' 等变量名
+#
+# ════════════════════════════════════════════════════════════════════════

@@ -1,0 +1,104 @@
+# parfile-constant-conductivity.txt
+#
+# 简化调试配置：Constant Conductivity + Constcm2g Opacity
+# 适用场景：数值测试、教学、调试 Hydro/EOS/Diffuse 是否对
+#
+# 注意：使用此配置需要在 Simulation Config 中显式 REQUESTS：
+#     REQUESTS physics/materialProperties/Conductivity/ConductivityMain/Constant
+#     REQUESTS physics/materialProperties/Opacity/OpacityMain/Constcm2g
+#
+# 然后 setup 加 REQUESTS 参数（或修改 Config）
+
+############################
+# SIMPLIFIED MATERIAL PROPERTIES
+############################
+
+# Conductivity: Constant 变体（固定热导率）
+useConductivity = .true.
+useDiffuse      = .true.
+diff_useEleCond = .true.
+
+# Constant 变体的固定热导率（erg/(cm·s·K)）
+# cond_constantIsochoric 设非 0 时覆盖下面三个
+cond_constantIsochoric = 1.0e7         # ~Spitzer 在 T~100 eV 的典型值
+# cond_constantParallel    = 0.0       # 各向异性（磁化用）
+# cond_constantPerpendicular = 0.0
+# cond_constantCross       = 0.0
+
+# 通量限制器（保持和 LaserSlab 一致）
+diff_eleFlMode  = "fl_larsen"
+diff_eleFlCoef  = 0.06
+diff_thetaImplct = 1.0
+
+diff_eleXlBoundaryType = "neumann"
+diff_eleXrBoundaryType = "neumann"
+diff_eleYlBoundaryType = "neumann"
+diff_eleYrBoundaryType = "neumann"
+diff_eleZlBoundaryType = "neumann"
+diff_eleZrBoundaryType = "neumann"
+
+
+############################
+# OPACITY: Constcm2g 变体（固定 mass opacity）
+############################
+useOpacity = .true.
+rt_useMGD  = .true.
+
+# 简化群结构（4 群，方便调试）
+rt_mgdNumGroups = 4
+rt_mgdBounds_1  = 1.0
+rt_mgdBounds_2  = 10.0
+rt_mgdBounds_3  = 100.0
+rt_mgdBounds_4  = 1000.0
+rt_mgdBounds_5  = 10000.0
+
+rt_mgdFlMode    = "fl_harmonic"
+rt_mgdFlCoef    = 1.0
+
+rt_mgdXlBoundaryType = "reflecting"
+rt_mgdXrBoundaryType = "vacuum"
+rt_mgdYlBoundaryType = "vacuum"
+rt_mgdYrBoundaryType = "reflecting"
+
+# 单物质（cham）—— 改成你的 species 名
+op_chamAbsorb = "op_constcm2g"
+op_chamAbsorbConstant = 100.0          # cm²/g（mass opacity 单位）
+op_chamEmiss  = "op_constcm2g"
+op_chamEmissConstant  = 100.0
+op_chamTrans  = "op_constcm2g"
+op_chamTransConstant  = 100.0
+
+
+############################
+# MATERIAL DEFINITIONS
+############################
+# 单物质 H/He 等离子体（教学用）
+ms_chamA = 1.0                         # H 原子量
+ms_chamZ = 1.0
+ms_chamZMin = 0.01
+eos_chamEosType = "eos_gam"            # 理想气体 EOS（简化）
+eos_chamSubType = "gammaLaw"
+eos_gammaLaw = 5.0/3.0                 # 单原子理想气体
+
+
+############################
+# NOTES
+############################
+# 1. Constant Conductivity 优点：
+#    - 无需 PlasmaState 依赖
+#    - 数值稳定（固定 κ）
+#    - 物理可预测（D = κ/(ρ·cv) 直接算）
+#
+# 2. Constcm2g Opacity 优点：
+#    - 无需外部表文件
+#    - 适合单元测试
+#    - 物理单位直观（cm²/g）
+#
+# 3. 不要用于生产算例！
+#    - 物理失真（真实 κ 依赖 T、ρ、ln Λ）
+#    - 用于验证 Hydro/EOS/Diffuse 流程是否正确
+#
+# 4. 调试技巧：
+#    - 先用此配置跑通算例
+#    - 再换 SpitzerHighZ + IONMIX4（参考 parfile-material-laserslab.txt）
+#    - 对比两次结果差异

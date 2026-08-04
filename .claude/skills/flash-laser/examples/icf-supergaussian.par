@@ -1,0 +1,90 @@
+# ============================================================
+# FLASH 4.8 激光配置片段 - ICF 直接驱动 super-Gaussian（Recipe 2）
+# ============================================================
+# 对应知识库：.claude/skills/flash-laser/knowledge/recipes.md §4
+#
+# 适用：ICF 直接驱动模拟、需要平顶光斑、需要可视化 ray 轨迹
+#
+# 使用方法：
+#   1. setup 命令（同 Recipe 1，可加 threadRayTrace=true 提速）：
+#      ./setup laser_CH -2d -auto +pm4dev -geometry=cylindrical \
+#          -nxb=16 -nyb=16 +mtmmmt +laser +mgd +uhd3t \
+#          species=cham,targ1,targ2,targ3 mgd_meshgroups=6 \
+#          threadRayTrace=true \
+#          -parfile=icf-supergaussian.par \
+#          -objdir=cases/laser_icf
+#
+#   2. cd cases/laser_icf && make -j4
+#   3. ./flash4 -parfile=flash.par
+#
+# 参数单位速查：
+#   ed_wavelength      = μm
+#   ed_lens*/target*   = cm
+#   ed_gaussianRadius  = cm
+#   ed_time            = s
+#   ed_power           = W
+#   ed_*TorsionAngle   = 度
+# ============================================================
+
+# ===== 总开关 =====
+useEnergyDeposition       = .true.
+ed_laser3Din2D            = .true.
+ed_laser3Din2DwedgeAngle  = 0.1
+ed_gradOrder              = 2
+ed_enforcePositiveTele   = .true.           # 防非物理负梯度
+ed_enforcePositiveNele   = .true.
+
+# 调试日志（推荐打开）
+ed_printMain   = .true.
+ed_printPulses = .true.
+ed_printBeams  = .true.
+
+# ===== Pulse 1: ICF 梯形脉冲（100 ps 上升 + 6 ns 平顶 + 100 ps 下降，300 GW）=====
+ed_numberOfPulses     = 1
+ed_numberOfSections_1 = 4
+ed_time_1_1 = 0.0       ; ed_power_1_1 = 0.0          # 起始 0
+ed_time_1_2 = 0.1e-9    ; ed_power_1_2 = 3.0e11       # 100 ps 上升沿 → 300 GW
+ed_time_1_3 = 6.0e-9    ; ed_power_1_3 = 3.0e11       # 5.9 ns 平顶
+ed_time_1_4 = 6.1e-9    ; ed_power_1_4 = 0.0          # 100 ps 下降沿
+
+# ===== Beam 1: 圆光斑平顶 super-Gaussian（α=4）=====
+ed_numberOfBeams = 1
+ed_pulseNumber_1              = 1
+ed_wavelength_1               = 1.053         # μm
+
+ed_lensX_1                    = 0.0           # cm
+ed_lensY_1                    = 0.0           # cm
+ed_lensZ_1                    = 12.0          # cm
+ed_lensSemiAxisMajor_1        = 0.5           # cm
+
+ed_targetX_1                  = 0.0           # cm
+ed_targetY_1                  = 0.0           # cm
+ed_targetZ_1                  = 0.0           # cm
+ed_targetSemiAxisMajor_1      = 0.01          # cm（100 μm）
+ed_targetSemiAxisMinor_1      = 0.01          # cm（a=b 圆形）
+ed_semiAxisMajorTorsionAxis_1 = "x"
+ed_semiAxisMajorTorsionAngle_1= 0.0           # 度
+
+# 平顶 super-Gaussian + 大 ray 数
+ed_numberOfRays_1             = 4096
+ed_gridType_1                 = "radial2D"
+ed_gridnRadialTics_1          = 64
+ed_crossSectionFunctionType_1 = "gaussian2D"
+ed_gaussianExponent_1         = 4.0           # ★ α=4 平顶 super-Gaussian
+ed_gaussianRadiusMajor_1      = 0.01          # cm（1/e 半径 = target 半径）
+ed_gaussianRadiusMinor_1      = 0.01          # cm
+ed_gaussianCenterMajor_1      = 0.0           # cm（同心）
+ed_gaussianCenterMinor_1      = 0.0           # cm
+
+# ===== LaserIO（可视化 ray 轨迹）=====
+ed_useLaserIO                  = .true.
+ed_laserIOMaxNumberOfPositions = 10000        # 每根 ray 最多 N 个轨迹点
+ed_laserIOMaxNumberOfRays      = 128          # 最多可视化多少根 ray
+ed_laserIORayFrequency         = 1            # 每步都写
+
+# ===== 验证 =====
+# 跑完后检查：
+#   - depo 在光斑内是平顶（不是高斯尖峰）→ 验证 α=4 生效
+#   - 总沉积能量 ≈ 入射能量 × 60-80%
+#   - TELE_VAR 峰值 < 5 keV
+#   - plotfile 含 LaserIO 数据集（用 yt 画 ray 路径）
