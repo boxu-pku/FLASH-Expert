@@ -72,6 +72,11 @@ FLASH-Expert 是一套**文件化的 AI 知识库系统**，由 18 个专门 ski
 | Claude Code | 已安装（`npm install -g @anthropic-ai/claude-code`） |
 | Python 3 + yt | 用于结果可视化（`pip install yt matplotlib`） |
 
+> **FLASH 安装教程**：如果你还没有安装 FLASH，可以参考笔者写的详细安装指南（以 FLASH 4.6.2 为例，4.8 安装步骤类似）：
+> [FLASH 4.6.2 安装教程（知乎）](https://zhuanlan.zhihu.com/p/1936822984418496779)
+>
+> 涵盖：mpich 编译、HDF5 编译、HYPRE 编译、Makefile.h 配置、libmpi 冲突处理等完整流程。
+
 ### 安装步骤
 
 ```bash
