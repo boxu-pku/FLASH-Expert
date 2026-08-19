@@ -44,6 +44,10 @@ tags:
 
 ### 1.2 分析流程（端到端旅程）
 
+> **输出在哪（约定）**：所有运行输出在 `cases/<case>/01-data/`——这是 `flash-case-runner` 的硬约束
+> （flash4 在 01-data/ 下启动，CWD 决定输出落点）。如果 objdir 根目录散落了 plt/chk/dat/log，
+> 说明有人违反约束在 objdir 根目录跑了 flash4。
+
 ```
 1. 先看日志（cat flash.log | tail）
    → 确认算例完整结束（"Simulation completed successfully"）

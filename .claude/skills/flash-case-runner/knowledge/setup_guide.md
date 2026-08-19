@@ -476,9 +476,10 @@ vi source/Simulation/SimulationMain/<MyProblem>/Simulation_init.F90
 cp source/Simulation/SimulationMain/LaserSlab/flash.par \
    source/Simulation/SimulationMain/<MyProblem>/example.par
 
-# 5. setup + make + run
+# 5. setup + make + run（run 在 01-data/ 里，硬约束）
 ./setup <MyProblem> [选项] -auto -objdir=cases/<MyProblem>
-cd cases/<MyProblem> && make -j4 && mpirun -np 2 ./flash4 -parfile=flash.par
+cd cases/<MyProblem> && make -j4
+mkdir -p 01-data && cd 01-data && mpirun -np 2 ../flash4 -par_file ../flash.par
 ```
 
 **详细**：见 `flash-setup-builder` skill（构造辅助）+ CLAUDE.md（项目根的"Adding a new problem"）。

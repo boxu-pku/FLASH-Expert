@@ -349,7 +349,7 @@ sudo mv /lib/x86_64-linux-gnu/libmpi.so.40.bak /lib/x86_64-linux-gnu/libmpi.so.4
 
 ```bash
 export LD_LIBRARY_PATH=/home/ubuntu/local/flash/myFLASH4.8/mpich/lib:$LD_LIBRARY_PATH
-mpirun -np 4 ./flash4 -parfile=flash.par
+mpirun -np 4 ./flash4 -par_file flash.par
 ```
 
 ### 详细文档

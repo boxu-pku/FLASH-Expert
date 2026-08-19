@@ -3,7 +3,8 @@
 # flash_log_parser.sh — FLASH 运行日志关键信息提取
 # ============================================================
 # 用法：
-#   bash flash_log_parser.sh cases/LaserSlab/flash.log
+#   bash flash_log_parser.sh cases/LaserSlab/01-data/flash.log
+#   （硬约束：运行日志在算例的 01-data/ 子目录，不在 objdir 根目录）
 #
 # 功能：从 flash.log 提取：
 #   1. setup 信息（命令、版本）

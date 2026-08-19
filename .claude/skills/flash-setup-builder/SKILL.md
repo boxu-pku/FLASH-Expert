@@ -179,7 +179,7 @@ setup 完后参考 `flash-case-runner`：
 cd cases/<算例>
 # 处理 libmpi 冲突（本机特有）
 make -j4
-./flash4 -parfile=flash.par
+./flash4 -par_file flash.par
 ```
 ````
 

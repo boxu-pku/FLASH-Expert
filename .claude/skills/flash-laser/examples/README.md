@@ -7,7 +7,7 @@
 1. 选一个最接近你需求的 `.par` 文件
 2. 把内容复制到 `<your_case>/flash.par` 的 `##### LASER PARAMETERS #####` 段（替换原有激光段）
 3. 按文件顶部注释里的 setup 命令运行
-4. `make -j4 && ./flash4 -parfile=flash.par`
+4. `make -j4 && ./flash4 -par_file flash.par`
 
 ## 文件清单
 

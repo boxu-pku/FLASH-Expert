@@ -54,7 +54,7 @@ grep -E '^ms_|^eos_|^op_' cases/<case>/flash.par
 ```bash
 cd cases/<case>
 make -j4
-./flash4 -parfile=flash.par
+./flash4 -par_file flash.par
 ```
 
 ### 5. 验证运行时物种数据库

@@ -10,8 +10,8 @@
 #   2. 处理 libmpi 冲突（编译期 sudo mv）
 #   3. make -j4
 #   4. source flash_env.sh（运行期 LD_PRELOAD）
-#   5. mpirun -np 2 ./flash4
-#   6. 检查产物
+#   5. 在 01-data/ 里 mpirun ../flash4（硬约束：输出只落 01-data/）
+#   6. 检查产物（在 01-data/ 里）
 # ============================================================
 
 set -e  # 任一步失败立即退出
@@ -20,6 +20,7 @@ set -e  # 任一步失败立即退出
 FLASH_ROOT=/home/ubuntu/local/flash/FLASH4.8/FLASH/FLASH4.8
 CASE_NAME=Sedov
 OBJDIR=$FLASH_ROOT/cases/$CASE_NAME
+DATADIR=$OBJDIR/01-data   # 运行输出目录（硬约束：plt/chk/log 全落这里）
 NP=${1:-2}  # 第一个参数是核数，默认 2
 
 cd $FLASH_ROOT
@@ -69,18 +70,19 @@ ls -lh ./flash4
 echo "[3/5] 配置运行环境 ..."
 source $FLASH_ROOT/flash_env.sh
 
-# ===== 4. run =====
-echo "[4/5] mpirun -np $NP ./flash4 ..."
-mpirun -np $NP ./flash4 -parfile=flash.par 2>&1 | tee flash.log
+# ===== 4. run（在 01-data/ 里，硬约束）=====
+mkdir -p $DATADIR && cd $DATADIR
+echo "[4/5] cd 01-data && mpirun -np $NP ../flash4 ..."
+mpirun -np $NP ../flash4 -par_file ../flash.par 2>&1 | tee flash.log
 
-# ===== 5. 检查产物 =====
-echo "[5/5] 检查产物 ..."
+# ===== 5. 检查产物（CWD 已是 01-data/）=====
+echo "[5/5] 检查产物（$DATADIR）..."
 echo ""
 echo "Plotfile 数量："
-ls *_hdf5_plt_*.h5 2>/dev/null | wc -l
+ls *_hdf5_plt_* 2>/dev/null | wc -l
 echo ""
 echo "Checkpoint 数量："
-ls *_hdf5_chk_*.h5 2>/dev/null | wc -l
+ls *_hdf5_chk_* 2>/dev/null | wc -l
 echo ""
 echo "日志最后 5 行："
 tail -5 flash.log

@@ -145,3 +145,31 @@ xray_printMain      = .true.
 python .claude/skills/flash-result-analyzer/examples/flash_plot_all.py \
     <case>/01-data/<basenm>_XrayDetectorFile01 --xray
 ```
+
+## 附：探测器几何选择——face-on 看不到轴向运动（2026-08-11 实证）
+
+**现象**：Sunliang_Xray 重放 7 个时刻（1/3/6.1/10/14/17/20 ns）的 6 keV 背光图像，
+帧间几乎无变化（max|diff|=0.013，仅 4.4% 像素有差异且集中在靶边缘）。
+
+**机制**（两条叠加）：
+1. **face-on 几何**（探测器法向沿柱轴 y）：轴向（y）的壳层运动沿视线方向，
+   每个像素的面密度柱积分 ∫ρ dy 由质量守恒保持 → 图像不变。
+   要看壳层运动必须 **side-on**（法向 ⊥ 柱轴，图像平面含 y 轴）。
+2. **Biggs-Lighthill 冷不透明度**：XrayImaging 的不透明度模型不响应温度/电离度，
+   加热不会使图像变亮——只对面密度敏感。
+
+**实践**：配置动态照相前先想清楚"看什么"——面密度均匀性用 face-on，
+壳层/激波位置用 side-on（探测器 normal 垂直柱轴，侧长要覆盖 y 全 domain）。
+
+## 附 2（2026-08-11 补充）：3Din2D 坐标约定 + side-on 演化态崩溃
+
+- **3Din2D 重构空间坐标**：柱轴 = Z，径向平面 = (X,Y)（证据：
+  `xray_detectorsCheck2DCyl3D.F90` 用 X²+Y² vs R²、Z vs 轴向边界做域校验）。
+  之前以为柱轴是 Y——**那是错的**，导致 first side-on 尝试把探测器放错位置。
+- **side-on 已验证可用配置**（冷靶/早期）：normal=(-1,0,0)，center=(0.1, 0, 0.0535)，
+  SideTiltingAxis="y"，SideLength=0.07。屏幕任何像素不得进入域圆柱
+  （X²+Y²≤R² 且 Z 在轴向范围内）否则 abort "screen (partially) inside the domain"。
+- ⚠️ **side-on 在演化态（≥6 ns）必崩**：`Grid_sortParticles` double free
+  （xray_updateXrays.F90:126），1/3 ns 正常、6.1/17 ns 确定性复现，
+  分辨率/线程数 workaround 均无效。根因未修；演化态请用合成辐射照相
+  （plotfile 弦积分 + 冷不透明度定标，见 `xray-sideon-crash-sortparticles.md`）。

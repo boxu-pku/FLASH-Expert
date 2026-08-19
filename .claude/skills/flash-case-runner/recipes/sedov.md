@@ -66,17 +66,20 @@ ls -lh flash4
 
 ### 步骤 3: run
 
+> **硬约束**：在 `cases/Sedov/01-data/` 里启动——所有输出（plt/chk/log）落 01-data，objdir 根目录只留编译产物。
+
 ```bash
 # 必须先 source flash_env.sh（即使 Sedov 也用 MPI）
 source /home/ubuntu/local/flash/FLASH4.8/FLASH/FLASH4.8/flash_env.sh
 
 cd cases/Sedov
+mkdir -p 01-data && cd 01-data
 
 # 单进程跑（验证用）
-mpirun -np 1 ./flash4 -parfile=flash.par 2>&1 | tee flash.log
+mpirun -np 1 ../flash4 -par_file ../flash.par 2>&1 | tee flash.log
 
 # 或多进程跑（4 核）
-mpirun -np 4 ./flash4 -parfile=flash.par 2>&1 | tee flash.log
+mpirun -np 4 ../flash4 -par_file ../flash.par 2>&1 | tee flash.log
 ```
 
 **Sedov 默认 parfile**（`source/Simulation/SimulationMain/Sedov/flash.par`，setup 时复制到 objdir）：
@@ -90,18 +93,18 @@ mpirun -np 4 ./flash4 -parfile=flash.par 2>&1 | tee flash.log
 ### 步骤 4: 看结果
 
 ```bash
-# 看 plotfile 数量
-ls cases/Sedov/*_hdf5_plt_*.h5
+# 看 plotfile 数量（输出都在 01-data/ 里）
+ls cases/Sedov/01-data/*_hdf5_plt_*
 
 # 看日志最后几行
-tail -10 cases/Sedov/flash.log
+tail -10 cases/Sedov/01-data/flash.log
 # 应该看到 "Simulation completed successfully"
 
 # 看 simTime 推进
-grep -i "simTime\|simulation time" cases/Sedov/flash.log | tail -10
+grep -i "simTime\|simulation time" cases/Sedov/01-data/flash.log | tail -10
 
 # 看 block 数演化（AMR 加密）
-grep -i "block" cases/Sedov/flash.log | tail -20
+grep -i "block" cases/Sedov/01-data/flash.log | tail -20
 ```
 
 **可视化**（用 Visit / Python）：

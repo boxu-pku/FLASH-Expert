@@ -16,6 +16,13 @@
 | `species-name-and-hdf5.md` | species 命名 + HDF5 + parfile 一致性（实战） | stable |
 | `xray-imaging-setup.md` | X 射线诊断模块配置陷阱（实战） | stable |
 | `missing-datafiles.md` | Config DATAFILES 声明遗漏（实战） | stable |
+| `negative-3t-internal-energy.md` | 3T 内能变负（ICF 启动数值崩溃） | stable |
+| `h5py-flash-plotfile-index-order.md` | h5py 直接读 plotfile 索引错位（后处理） | stable |
+| `mpi-romio-null-comm-allreduce.md` | 长跑后 ROMIO 集合写 Allreduce on MPI_COMM_NULL（实战） | beta |
+| `restart-plotfilenumber-overwrite.md` | restart 未设 plotFileNumber → 覆盖旧 plotfile（实战） | stable |
+| `plotfile-interval-too-dense.md` | plotFileIntervalTime < dt → 每步一个 plotfile（实战） | stable |
+| `restart-skeleton-plotfiles.md` | restart 后定时 plotfile 是空壳（无物理场数据集）（实战） | beta |
+| `parfile-flag-ignored.md` | flash4 的 -parfile=X 静默忽略（正确：-par_file X）（实战） | stable |
 
 ## 与单元内 pitfalls 的关系
 
@@ -75,3 +82,6 @@ tags:
 |---|---|---|
 | 2026-07-12 | 初始创建（6 条跨领域踩坑 + README） | claude |
 | 2026-08-03 | 加 4 条实战踩坑：EOS Newton 不收敛 + species 名/HDF5 + X 射线诊断配置 + DATAFILES 遗漏（来自 Sunliang_laser_CH / Sunliang_Xray 实战调试） | claude |
+| 2026-08-10 | 加 3 条实战踩坑：ROMIO 集合写 NULL comm 崩溃（MPI-IO 层，含完整取证链）+ restart 覆盖旧 plotfile（plotFileNumber 未设）+ plotfile 间隔过密（IO 频率配置）—— Sunliang_Xray 崩溃排查 + 续跑实战 | claude |
+| 2026-08-10 | 加 restart-skeleton-plotfiles.md（restart 后定时 plotfile 空壳）—— 可视化实战中发现；同时修正 restart-plotfilenumber-overwrite.md 覆盖数 22→70 | claude |
+| 2026-08-11 | 加 parfile-flag-ignored.md（-parfile=X 静默忽略，正确是 -par_file X，源码 RuntimeParameters_init.F90:86）—— X 光重放验证跑抓出；全库 62 处错误写法（含 CLAUDE.md + 7 个 skill）修正 | claude |

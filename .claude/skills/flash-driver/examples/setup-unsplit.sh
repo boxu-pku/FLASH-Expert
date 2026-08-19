@@ -21,4 +21,4 @@
 # 编译运行
 cd cases/<your_case>
 make -j4
-./flash4 -parfile=flash.par
+./flash4 -par_file flash.par

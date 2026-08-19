@@ -12,8 +12,8 @@
 #   2. 处理 libmpi 冲突（编译期 sudo mv）
 #   3. make -j4
 #   4. source flash_env.sh（运行期 LD_PRELOAD，关键！）
-#   5. mpirun ./flash4
-#   6. 检查产物
+#   5. 在 01-data/ 里 mpirun ../flash4（硬约束：输出只落 01-data/）
+#   6. 检查产物（在 01-data/ 里）
 #
 # 2026-08-02 实战验证：本脚本流程跑通 66 步，零 MPI 错误。
 # ============================================================
@@ -24,6 +24,7 @@ set -e
 FLASH_ROOT=/home/ubuntu/local/flash/FLASH4.8/FLASH/FLASH4.8
 CASE_NAME=LaserSlab
 OBJDIR=$FLASH_ROOT/cases/$CASE_NAME
+DATADIR=$OBJDIR/01-data   # 运行输出目录（硬约束：plt/chk/dat/log 全落这里）
 NP=${1:-2}
 MODE=${2:-foreground}  # foreground 或 background
 
@@ -102,23 +103,24 @@ if [ -z "$LD_PRELOAD" ]; then
     exit 1
 fi
 
-# ===== 4. run =====
+# ===== 4. run（在 01-data/ 里，硬约束）=====
+mkdir -p $DATADIR && cd $DATADIR
 echo ""
 if [ "$MODE" = "background" ]; then
-    echo "[4/5] 后台 mpirun -np $NP ..."
-    nohup mpirun -np $NP ./flash4 -parfile=flash.par > flash.log 2>&1 &
+    echo "[4/5] 后台 mpirun -np $NP（CWD=01-data）..."
+    nohup mpirun -np $NP ../flash4 -par_file ../flash.par > flash.log 2>&1 &
     FLASH_PID=$!
     echo "  FLASH PID: $FLASH_PID"
-    echo "  日志：tail -f $OBJDIR/flash.log"
+    echo "  日志：tail -f $DATADIR/flash.log"
     echo "  停止：kill $FLASH_PID"
 else
-    echo "[4/5] 前台 mpirun -np $NP ..."
-    mpirun -np $NP ./flash4 -parfile=flash.par 2>&1 | tee flash.log
+    echo "[4/5] 前台 mpirun -np $NP（CWD=01-data）..."
+    mpirun -np $NP ../flash4 -par_file ../flash.par 2>&1 | tee flash.log
 fi
 
-# ===== 5. 检查产物 =====
+# ===== 5. 检查产物（CWD 已是 01-data/）=====
 echo ""
-echo "[5/5] 检查产物 ..."
+echo "[5/5] 检查产物（$DATADIR）..."
 
 # 日志关键事件
 echo ""
@@ -131,15 +133,15 @@ grep -i "sigsegv\|abort\|nan\|forrtl: error" flash.log | head -10
 
 echo ""
 echo "=== Plotfile 数量 ==="
-ls *_hdf5_plt_*.h5 2>/dev/null | wc -l
+ls *_hdf5_plt_* 2>/dev/null | wc -l
 
 echo ""
 echo "=== Checkpoint 数量 ==="
-ls *_hdf5_chk_*.h5 2>/dev/null | wc -l
+ls *_hdf5_chk_* 2>/dev/null | wc -l
 
 echo ""
 echo "=== 最新 plotfile ==="
-ls -lht *_hdf5_plt_*.h5 2>/dev/null | head -3
+ls -lht *_hdf5_plt_* 2>/dev/null | head -3
 
 echo ""
 echo "=== 日志最后 10 行 ==="

@@ -332,6 +332,25 @@ grep "out of table\|outside\|extrapolat" 01-data/<basenm>.log | head -10
 
 **修复**：用范围更大的表（FEOS 重新生成）。
 
+### D.4 IONMIX 表接入的硬校验（2026-08-07 CarbonSlab 实战）
+
+**背景**：接入自算的 IONMIX 表（`op_*FileType = "ionmix4"` + `op_*FileName = "xxx.imx"`）时，FLASH 在初始化阶段做两层**硬校验**（任一不过 → `Driver_abortFlash`，算例启动不了——这其实是个优点，比静默错位好）：
+
+| 校验 | 源码位置 | 失败报错 |
+|---|---|---|
+| 表内群数 == `op_nEnergyGroups`(即 `mgd_meshgroups`) | `op_readIonmix4Tables.F90:198` | `bad size of IONMIX4 energy group grid` |
+| 表内群边界 == `rt_mgdBounds_*`(相对差 ≤ `op_tableEnergyTolerance`，默认 1e-4) | `op_readIonmix4Tables.F90:232-269` | `Energy group mismatch (SEE LOG FILE)` |
+
+**修复思路**：先定 MGD 群结构（`mgd_meshgroups` + `rt_mgdBounds_*`），再让 IONMIX 表用**完全相同**的边界（IONMIX 输入 `isw(13)=1` + `grupbd`），最后用转换脚本 `--dump-groups` 打印表内边界核对。
+
+**ionmix4 vs ionmix 两种格式**（`op_*FileType` 必须匹配实际文件格式，配错会读表错位 abort）：
+- `ionmix4`（`op_readIonmix4Tables`，**主流**）：`(2I10)` 点数 → 2×A80 组分头 → `(I12)` 群数 → **温度/密度数组(真实值)** → **12 个 dummy 块** → 群边界 → 三张表；
+- `ionmix`（`op_readIonmixTables`，IONMIX v1 旧格式）：第 4 行 `(4E12.6,I12)` 网格头 → 4 个 dummy 块。
+
+**注意**：表内温度/密度网格（离子数密度 cm⁻³，温度 eV，FLASH 读入自动转 K）必须**对数均匀**（FLASH 按首点+步长重建，ionmix4 直接读数组），且范围要覆盖算例物理状态。
+
+**逐值验证方法**（转换是否正确的最强证据）：临时加 `opacity_writeOpacityInfo = .true.` 让 FLASH 打印读入的表（`opacity_printout_tables.txt`，含 PA/PE/RO 三表 log10 值），与 imx 源表逐值对比。实测最大 |log10差| ~5e-7（浮点精度级）。⚠️ 该参数会触发 `op_writeOpacity` 段错误（FLASH bug，崩在表打印**之后**，打印文件完整可用），验证完删除。完整流程见 IONMIX 仓库 `tutorial_ionmix_to_flash.md`。
+
 ---
 
 ## E. 通用调试流程

@@ -43,7 +43,7 @@ FLASH does **not** have a top-level Makefile. The workflow is *configure-per-pro
 ```
 ./setup <SimulationMain/problem> [opts] -auto -objdir=<path>
 cd <path> && make -j<N>          # produces ./flash4
-./flash4 -parfile=<name>.par     # runs the simulation
+./flash4 -par_file <name>.par     # runs the simulation
 ```
 
 `./setup` is a thin wrapper that execs `bin/setup.py`. Real examples for this tree:
@@ -126,6 +126,6 @@ Expect the warning otherwise; it's only fatal at runtime if `libmpi.so.40` ends 
 2. Edit `Config` (declare `REQUIRES`/`REQUESTS`/`PARAMETER`s) and the `Simulation_initBlock.F90` / `Simulation_init.F90` stubs.
 3. Drop a `flash.par` template (copy from a sibling problem and rename to `<name>.par` so `-parfile=` finds it).
 4. `./setup <MyProblem> [opts] -auto -objdir=cases/<MyProblem>`.
-5. `cd cases/<MyProblem> && make -j4 && ./flash4 -parfile=flash.par`.
+5. `cd cases/<MyProblem> && make -j4 && ./flash4 -par_file flash.par`.
 
 Runtime parameters declared in `Config` (via `PARAMETER <name> TYPE [CONSTANT] [default]`) become namelist entries in `flash.par`; constants are baked in at compile time, non-constants are read at startup.

@@ -52,7 +52,12 @@ source_anchors:
 | run | dt 突然变小 | §3.12 |
 | restart | NXB 不一致 abort | §4.1 |
 | restart | species 数变了 abort | §4.2 |
-| restart | restartFile 路径错 | §4.3 |
+| restart | restartFile 无效参数 / 找不到 chk | §4.3 |
+| restart | 续跑覆盖旧 plotfile（plotFileNumber 未设） | §4.3 + `agent/pitfalls/restart-plotfilenumber-overwrite.md` |
+| restart | 续跑后定时 plotfile 是空壳（无物理场数据集，日志却正常） | `agent/pitfalls/restart-skeleton-plotfiles.md` |
+| run/IO | plotfile 数量爆炸（每步一个） | §5.4 + `agent/pitfalls/plotfile-interval-too-dense.md` |
+| run | `-parfile=X` 被静默忽略（读了默认 flash.par） | `agent/pitfalls/parfile-flag-ignored.md`（正确：`-par_file X`） |
+| run | 长跑后 `internal_Allreduce ... MPI_COMM_NULL` | §3.1.1 + `agent/pitfalls/mpi-romio-null-comm-allreduce.md` |
 
 ---
 
@@ -363,7 +368,7 @@ echo "LD_PRELOAD: $LD_PRELOAD"
 echo "PATH mpirun: $(which mpirun)"
 
 # 2. 看 flash.log
-grep -B2 -A10 "SIGSEGV\|Driver_initParallel" cases/<case>/flash.log
+grep -B2 -A10 "SIGSEGV\|Driver_initParallel" cases/<case>/01-data/flash.log
 ```
 
 **机制**（L-008：非源码错）：
@@ -375,11 +380,29 @@ flash4 启动时 loader 找 `libmpi.so`：
 
 **修复**：
 ```bash
+cd cases/<case>/01-data   # 硬约束：在 01-data/ 里跑，输出不散落 objdir 根目录
 source /home/ubuntu/local/flash/FLASH4.8/FLASH/FLASH4.8/flash_env.sh
-mpirun -np 2 ./flash4 -parfile=flash.par
+mpirun -np 2 ../flash4 -par_file ../flash.par
 ```
 
 **详细**：见 `agent/pitfalls/libmpi-conflict.md` + `agent/pitfalls/mpi-errors.md` + `run_guide.md §1.4`。
+
+### 3.1.1 长跑后 `internal_Allreduce ... MPI_COMM_NULL`（ROMIO 集合 I/O，2026-08-10 排查）
+
+**错误信息**（指纹）：
+```
+Fatal error in internal_Allreduce: Invalid communicator, error stack:
+internal_Allreduce(128): MPI_Allreduce(..., count=1, MPI_INT, op=0x98000000, MPI_COMM_NULL) failed
+internal_Allreduce(45).: Null communicator
+```
+
+**机制**（一句话）：mpich ROMIO（MPI-IO）two-phase 集合写的 consensus Allreduce 拿到 NULL 通信子——C 层（非 FLASH Fortran/物理）故障，**非确定性**，高频集合 IO（每步一个 plotfile）是触发条件。
+
+**关键特征**：长跑后（数千步）才出现；**restart 从最近 chk 续跑可越过崩溃点**（已实证）。
+
+**修复**：① restart 续跑；② 降 plotfile 频率（`plotFileIntervalTime` 别小于 dt）；③ 复发则 `export ROMIO_CB_WRITE=disable` 绕过 two-phase。
+
+**详细**：见 `agent/pitfalls/mpi-romio-null-comm-allreduce.md`（含完整证据链：handle 解码 + objdir Allreduce 穷举 + 反汇编 op 创建点 + 5 行 C 程序逐字复现指纹）。
 
 ### 3.2 forrtl: error (65): floating invalid
 
@@ -392,13 +415,13 @@ forrtl: info : floating exception trap mask: invalid
 **贴什么现场**：
 ```bash
 # 1. 看哪一步炸
-grep -B10 "forrtl: error (65)" cases/<case>/flash.log | head -30
+grep -B10 "forrtl: error (65)" cases/<case>/01-data/flash.log | head -30
 
 # 2. 看 dt 演化
-grep -E "nstep|dt" cases/<case>/flash.log | tail -20
+grep -E "nstep|dt" cases/<case>/01-data/flash.log | tail -20
 
 # 3. 看 NaN
-grep -i "nan\|below floor" cases/<case>/flash.log | head -10
+grep -i "nan\|below floor" cases/<case>/01-data/flash.log | head -10
 ```
 
 **机制**：浮点 NaN 运算（除零、负开方、`log(<0)` 等）。
@@ -409,7 +432,7 @@ grep -i "nan\|below floor" cases/<case>/flash.log | head -10
 |---|---|---|
 | CFL 太大 | `grep hydro_cfl cases/<case>/flash.par` | 降 hydro_cfl = 0.1-0.3 |
 | 物理初值炸 | 看 Simulation_initBlock.F90 | 调 sim_rhoMin / sim_teleMin |
-| EOS 表超范围 | `grep "EOS.*out of" cases/<case>/flash.log` | 扩展表范围或调 floor |
+| EOS 表超范围 | `grep "EOS.*out of" cases/<case>/01-data/flash.log` | 扩展表范围或调 floor |
 | 激光参数错 | `grep ed_ cases/<case>/flash.par` | 见 `flash-laser` |
 
 **详细**：见 `agent/pitfalls/ffpe-trap-and-nan.md`。
@@ -448,7 +471,7 @@ forrtl: error (408): fort: (3): Subscript #1 of the array X has value Y which ex
 **贴什么现场**：
 ```bash
 # 1. 完整错误段
-grep -B5 -A15 "ed_\[a-zA-Z\]*:" cases/<case>/flash.log | head -50
+grep -B5 -A15 "ed_\[a-zA-Z\]*:" cases/<case>/01-data/flash.log | head -50
 
 # 2. 激光 parfile 段
 grep -E "^useLaser|^ed_|^laser_" cases/<case>/flash.par
@@ -461,6 +484,81 @@ grep -E "^useLaser|^ed_|^laser_" cases/<case>/flash.par
 - `ed_createBeam: cannot determine beam domain`（束指向错）
 - `ed_xcrossFn: alpha < 0`（截面函数参数错）
 
+### 3.5.1 `ed_setupBeams: invalid 2D/3D beam grid type`（2026-08-07 CarbonSlab 实战）
+
+**错误信息**（两种变体）：
+```
+ed_setupBeams: invalid 2D beam grid type!
+  Beam # , grid type = square2D
+  Should be: regular1D or statistical1D
+
+ed_setupBeams: invalid 3D beam grid type!
+  Beam # , grid type = regular1D
+  Should be: square2D, radial2D, delta2D, rectangular2D or statistical2D
+```
+
+**贴什么现场**：
+```bash
+grep -n "ed_gridType\|ed_laser3Din2D" cases/<case>/flash.par
+```
+
+**机制**（L-008：源码 `EnergyDepositionMain/Laser/LaserBeams/ed_setupBeams.F90:118-132`）：
+
+ED 单元按"光束几何"决定合法的光束网格类型，而光束几何由 `ed_gridGeometry` 和 `ed_laser3Din2D` 共同决定：
+
+| 条件 | beams2D | beams3D | 合法 gridType |
+|---|---|---|---|
+| 2D 圆柱，`ed_laser3Din2D=.false.`(默认) | ✓ | ✗ | `regular1D` / `statistical1D` |
+| 2D 圆柱，`ed_laser3Din2D=.true.` | ✗ | ✓ | `square2D` / `radial2D` / `delta2D` / `rectangular2D` / `statistical2D` |
+
+两种变体对应两个条件分支：配了 `square2D` 但没设 `ed_laser3Din2D` → 报 "invalid 2D"；配了 `regular1D` 但设了 `ed_laser3Din2D=.true.` → 报 "invalid 3D"。
+
+**修复**：让 `ed_gridType_1` 与 `ed_laser3Din2D` 配套即可（见上表），二选一：
+```fortran
+# 方案 A: 2D 光束 (2D 圆柱默认)
+ed_gridType_1 = "regular1D"     # 或 statistical1D
+
+# 方案 B: 3D 光束在 2D 几何 (LaserSlab example.par 的选择)
+ed_laser3Din2D           = .true.
+ed_laser3Din2DwedgeAngle = 0.1
+ed_gridType_1            = "radial2D"
+```
+
+**重要前置教训（2026-08-07 实测）**：`LaserSlab` 源码目录的 `flash.par` 是 **3D 版**（`ed_gridType_1 = "square2D"`），直接用它在 2D 算例上跑必然报 "invalid 2D beam grid type"。**2D 圆柱算例必须用 `example.par` 作为修改基础**（LaserSlab setup_call 的 `-parfile=example.par` 也是这么用的）。
+
+**详细**：见 `flash-laser` skill（ed_* 参数）+ `recipes/laser-slab-2d.md §4.8`。
+
+### 3.5.2 [Opacity] abort：IONMIX 表群结构不匹配（2026-08-07 实战）
+
+**错误信息**（两种）：
+```
+[op_readIonmix4Tables] ERROR: bad size of IONMIX4 energy group grid
+[op_readIonmix4Tables] ERROR: Energy group mismatch (SEE LOG FILE)
+[op_readIonmixTables]  ERROR: bad size of IONMIX energy group grid
+[op_readIonmixTables]  ERROR: IONMIX / Opacity energy group mismatch
+```
+
+**贴什么现场**：
+```bash
+# 群数 vs 表群数
+grep rt_mgdNumGroups cases/<case>/flash.par          # 由 setup 变量 mgd_meshgroups 决定
+# 群边界 vs 表边界
+grep rt_mgdBounds cases/<case>/flash.par
+python3 /home/ubuntu/local/IONMIX/abjt_v1_0/ionmix2imx.py <ionmxout> --dump-groups   # 打印表内边界
+```
+
+**机制**：FLASH 读表时做两层校验（`op_readIonmixTables.F90:198` 和 `:229-237`）：
+1. 表内群数 ≠ `op_nEnergyGroups`（= `mgd_meshgroups`）→ `bad size` abort；
+2. 表内群边界与 `rt_mgdBounds_*` 相对差 > `op_tableEnergyTolerance`（默认 1e-4）→ `group mismatch` abort。
+
+**修复**：让三者一致——表群数 = `mgd_meshgroups`，表边界 = `rt_mgdBounds_*`。两个方向都行：
+- 改 IONMIX 输入（`ngrups` + `isw(13)=1` + `grupbd`）重算，再重新转换；
+- 或把 parfile 的 `rt_mgdBounds_*` 改成表内边界。
+
+**注意**：`ionmix4` 与 `ionmix` 是两种不同格式（头部布局、dummy 块数不同），`op_*FileType` 必须与文件实际格式一致，配错会在读表时错位 abort。
+
+**详细**：见 `flash-radtrans` skill `knowledge/pitfalls.md` §D + `recipes/laser-slab-2d.md §4.9`。
+
 ### 3.6 [Multitype] / [Tabulated]: abort（EOS 超范围）
 
 **错误信息**：
@@ -471,7 +569,7 @@ grep -E "^useLaser|^ed_|^laser_" cases/<case>/flash.par
 **贴什么现场**：
 ```bash
 # 看错误前几步的密度/温度
-grep -B10 "Multitype\|Tabulated" cases/<case>/flash.log | head -30
+grep -B10 "Multitype\|Tabulated" cases/<case>/01-data/flash.log | head -30
 ```
 
 **机制**：EOS 表的密度/温度范围不够覆盖算例的物理条件。
@@ -504,15 +602,42 @@ grep -B10 "Multitype\|Tabulated" cases/<case>/flash.log | head -30
 **贴什么现场**：
 ```bash
 # 看哪个变量 NaN
-grep -B5 -A5 "NaN" cases/<case>/flash.log | head -30
+grep -B5 -A5 "NaN" cases/<case>/01-data/flash.log | head -30
 
 # 看 dt 演化
-grep -E "nstep|dt" cases/<case>/flash.log | tail -30
+grep -E "nstep|dt" cases/<case>/01-data/flash.log | tail -30
 ```
 
 **机制**：物理数值炸。
 
 **修复**：见 `flash-pitfall-finder`（NaN 类）+ 降 CFL + 调 floor。
+
+### 3.8.1 SIGSEGV in `op_writeOpacity.F90`（2026-08-07 实战：opacity_writeOpacityInfo 的 FLASH bug）
+
+**错误信息**：
+```
+Program received signal SIGSEGV: Segmentation fault - invalid memory reference.
+Backtrace:
+#0  ... in op_writeopacity_  at .../op_writeOpacity.F90:97
+#1  ... in opacity_init_      at .../Opacity_init.F90:193
+```
+
+**贴什么现场**：
+```bash
+grep -A10 "Backtrace" run_stdout.log | head -12
+```
+
+**机制**：`opacity_writeOpacityInfo = .true.` 时，FLASH 在初始化最后额外调用 `op_writeOpacity`（写 opacplot 格式文件，`Opacity_init.F90:193`），该功能在本机 FLASH 4.8 上**必然段错误**（`op_writeOpacity.F90:97`），与不透明度表本身无关。
+
+**关键点**：段错误发生在 `op_writeTables`（写 `opacity_printout_tables.txt`）**之后**——`opacity_printout_tables.txt` 内容完整可用。因此这个选项仍可临时用于"让 FLASH 打印读入的表、与源表逐值对比"的验证流程，验证完删除即可。
+
+**修复**：验证完删除该参数：
+```bash
+sed -i '/opacity_writeOpacityInfo/d' flash.par
+rm -f opacity_printout_tables.txt
+```
+
+**验证流程**：见 `recipes/laser-slab-2d.md §4.10` + IONMIX 转换教程。
 
 ### 3.9 below floor for density
 
@@ -536,7 +661,7 @@ eos_smallx = 1.0e-30  # 单物种质量分数 floor
 
 **贴现场**：
 ```bash
-grep -i "leaf block\|total block" cases/<case>/flash.log | tail -30
+grep -i "leaf block\|total block" cases/<case>/01-data/flash.log | tail -30
 ```
 
 **机制**：激波传出 domain，AMR 一直 refine。
@@ -550,7 +675,7 @@ grep -i "leaf block\|total block" cases/<case>/flash.log | tail -30
 
 **贴现场**：
 ```bash
-mpirun -np 2 ./flash4 -parfile=flash.par 2>&1 | head -30
+cd cases/<case>/01-data && mpirun -np 2 ../flash4 -par_file ../flash.par 2>&1 | head -30
 ```
 
 **常见错**：
@@ -569,7 +694,7 @@ mpirun -np 2 ./flash4 -parfile=flash.par 2>&1 | head -30
 **贴现场**：
 ```bash
 # 看 dt 限制项
-grep -i "dt.*limit\|cfl\|hx_dt\|ed_dt" cases/<case>/flash.log | tail -30
+grep -i "dt.*limit\|cfl\|hx_dt\|ed_dt" cases/<case>/01-data/flash.log | tail -30
 ```
 
 **机制**：物理炸了（密度低 / 温度高 → 声速大 → CFL 限制 dt 小）。
@@ -620,30 +745,37 @@ h5dump -A cases/<case>/<basenm>_hdf5_chk_0020.h5 | grep -i "nxb\|nyb"
 
 **修复**：续跑必须用**完全相同的 species 列表**重 build。
 
-### 4.3 restartFile 路径错
+### 4.3 restart 参数名错 / 找不到 restart 文件（2026-08-10 实证重写）
 
 **错误信息**：
 ```
-[Driver_abortFlash] IO: cannot open restart file: <X>
+RuntimeParameters_read:  ignoring unknown parameter "restartFile"...
+[Driver_abortFlash] IO: cannot open restart file: <basenm>_hdf5_chk_0000
 ```
 
 **贴什么现场**：
 ```bash
-# 1. 看 parfile 的 restartFile 值
-grep -E "restartFile|^restart" cases/<case>/flash.par
+# 1. 看 parfile 的 restart 三件套
+grep -E "^restart|^checkpointFileNumber|^plotFileNumber|^basenm" cases/<case>/flash.par
 
-# 2. 看实际 checkpoint 文件
-ls cases/<case>/*_hdf5_chk_*.h5
+# 2. 看实际 checkpoint 文件（在 01-data/ 里）
+ls cases/<case>/01-data/*_hdf5_chk_*
 ```
 
-**机制**：parfile 的 `restartFile` 不带 `.h5` 后缀，是文件名前缀。
+**机制**（2026-08-10 实证纠正）：~~`restartFile`~~ **不是 FLASH 4.8 的有效参数**——写了会被 ignore，
+然后按 `checkpointFileNumber`（默认 0）拼文件名 `<basenm>_hdf5_chk_<编号>` 去读，找不到就 abort。
+正确机制：**restart 文件名 = basenm + "hdf5_chk_" + checkpointFileNumber**，相对 CWD 解析。
 
-**修复**：
+**修复**（续跑三件套，缺一不可）：
 ```fortran
-# parfile 正确写法
-restart = .true.
-restartFile = "LaserSlab_hdf5_chk_0020"   # 不带 .h5
+restart              = .true.
+checkpointFileNumber = 8      # 读哪个 chk（编号对应 _hdf5_chk_0008）
+plotFileNumber       = 1630   # 写 plt 续接编号 = 原序列最后编号 + 1
 ```
+
+**⚠️ 连带坑**：不设 `plotFileNumber`，parfile 里遗留的 `plotFileNumber = 0` 会覆盖 chk 存的计数器，
+新 plt 从 0 重编号并**静默覆盖**旧 plotfile（2026-08-10 Sunliang_Xray 实战，损失 22 个早期 plt）。
+见 `agent/pitfalls/restart-plotfilenumber-overwrite.md`。
 
 ### 4.4 续跑后 block 数暴涨
 
@@ -661,7 +793,7 @@ restartFile = "LaserSlab_hdf5_chk_0020"   # 不带 .h5
 
 **修复**：用前一个 checkpoint：
 ```bash
-ls cases/<case>/*_hdf5_chk_*.h5 | sort | tail -3
+ls cases/<case>/01-data/*_hdf5_chk_* | sort | tail -3
 # 用倒数第二个（最新的可能损坏）
 ```
 
@@ -691,8 +823,8 @@ grep "<参数名>" cases/<case>/setup_params
 
 **贴现场**：
 ```bash
-# 用 h5dump 验证
-h5dump -H cases/<case>/<basenm>_hdf5_plt_cnt_0050.h5 | head -20
+# 用 h5dump 验证（plotfile 在 01-data/ 里）
+h5dump -H cases/<case>/01-data/<basenm>_hdf5_plt_cnt_0050 | head -20
 ```
 
 **常见原因**：
@@ -709,10 +841,26 @@ h5dump -H cases/<case>/<basenm>_hdf5_plt_cnt_0050.h5 | head -20
 # 1. 改 basenm（parfile 里的 IO 输出前缀）
 # basenm = "<新名字>"
 
-# 2. 或清空旧文件
-rm cases/<case>/*_hdf5_plt_*.h5
-rm cases/<case>/*_hdf5_chk_*.h5
+# 2. 或清空旧文件（在 01-data/ 里）
+rm cases/<case>/01-data/*_hdf5_plt_*
+rm cases/<case>/01-data/*_hdf5_chk_*
 ```
+
+### 5.4 plotfile 数量爆炸（每步一个 plotfile）
+
+**症状**：`ls cases/<case>/01-data/*_hdf5_plt_cnt_* | wc -l` 接近总步数；
+磁盘占用数 GB；长跑后期步速变慢。
+
+**机制**：`plotFileIntervalTime`（模拟时间间隔，不是 wall time）< dt 时，
+每一步都满足写出条件。Sunliang_Xray 实证：0.01e-9 < dt≈1.35e-11 →
+8041 步写出 1630 个 plt（6.7 GB），并诱发 ROMIO 集合写崩溃（§3.1.1）。
+
+**修复**：
+```fortran
+plotFileIntervalTime = 0.1e-09   # ≥ 5×dt；或按步 plotFileIntervalStep = 50
+```
+**经验法则**：整个算例 plt 总量控制在 100~500 个。
+详见 `agent/pitfalls/plotfile-interval-too-dense.md`。
 
 ---
 

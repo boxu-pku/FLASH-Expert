@@ -82,7 +82,7 @@ ls /home/ubuntu/local/flash/FLASH4.8/FLASH/FLASH4.8/cases/Sedov/Makefile.h
 ```bash
 cd cases/Sedov
 make -j4
-./flash4 -parfile=flash.par
+./flash4 -par_file flash.par
 ```
 
 ---
@@ -188,10 +188,10 @@ make -j4
 sudo mv /lib/x86_64-linux-gnu/libmpi.so.40.bak /lib/x86_64-linux-gnu/libmpi.so.40
 
 # 跑（单进程验证）
-./flash4 -parfile=flash.par
+./flash4 -par_file flash.par
 
 # 多进程
-mpirun -np 4 ./flash4 -parfile=flash.par
+mpirun -np 4 ./flash4 -par_file flash.par
 ```
 
 ---
@@ -345,7 +345,7 @@ print(f'每进程内存约 {bytes/1e9:.1f} GB（粗略估算）')
 "
 
 # 3. 测试小规模跑通
-mpirun -np 4 ./flash4 -parfile=flash.par  # 先 4 进程验证
+mpirun -np 4 ./flash4 -par_file flash.par  # 先 4 进程验证
 ```
 
 ---

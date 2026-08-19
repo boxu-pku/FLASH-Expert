@@ -25,6 +25,9 @@
 - [L-015: 回答"X 做了什么"先讲完整故事线（定义→传递→处理→使用），再讲细节](#l-015-回答x-做了什么先讲完整故事线定义传递处理使用再讲细节)
 - [L-016: FLASH species 名有长度限制——多物质算例用短名避免 HDF5 冲突](#l-016-flash-species-名有长度限制多物质算例用短名避免-hdf5-冲突)
 - [L-017: 解决报错后自主询问是否沉淀到报错库](#l-017-解决报错后自主询问是否沉淀到报错库)
+- [L-018: restart 必须显式设 IO 编号参数（parfile 显式值覆盖 chk 计数器）](#l-018-restart-必须显式设-io-编号参数parfile-显式值覆盖-chk-计数器)
+- [L-019: IO 频率按物理时间分辨率设，不按步](#l-019-io-频率按物理时间分辨率设不按步)
+- [L-020: MPI 崩溃取证方法论——handle 解码 + 最小复现 + 沙箱 restart](#l-020-mpi-崩溃取证方法论handle-解码--最小复现--沙箱-restart)
 
 ---
 
@@ -1105,6 +1108,101 @@ species=cham,targ1,targ2,targ3 → HDF5 abort "name already exists" ✗
 
 ---
 
+## L-018: restart 必须显式设 IO 编号参数（parfile 显式值覆盖 chk 计数器）
+
+**首次发现日期**：2026-08-10（Sunliang_Xray 续跑实战）
+**影响范围**：所有 restart 续跑场景
+**严重度**：高（静默数据丢失）
+
+### 问题
+
+续跑 Sunliang_Xray 时按旧文档写法只设了 `restart=.true. + restartFile=...`，结果：
+1. `restartFile` 不是 FLASH 4.8 的有效参数（日志报 `ignoring unknown parameter`），
+   真正生效的是 `checkpointFileNumber`（文件名由 basenm + 编号自动拼出）
+2. 未设 `plotFileNumber` → parfile 里初跑遗留的 `plotFileNumber = 0` **覆盖了
+   checkpoint 中保存的 plt 计数器** → 新 plotfile 从 0 重新编号，**静默覆盖**
+   原序列 70 个早期文件后才发现
+
+### 根因
+
+- FLASH restart 时 parfile 显式值优先级高于 chk 内保存的 IO 计数器——
+  "chk 会记住编号"的直觉是错的
+- 旧 skill 文档把 `restartFile` 当成有效参数写（经验来自更早版本/记忆，未经 4.8 实证——L-009 同类）
+
+### 解决（restart 三件套，缺一不可）
+
+```fortran
+restart              = .true.
+checkpointFileNumber = <最新 chk 编号>
+plotFileNumber       = <最新 plt 编号 + 1>
+```
+
+已修正 skill 库全部 11 处错误写法，并建 `agent/pitfalls/restart-plotfilenumber-overwrite.md`。
+
+### 推广
+
+**凡是"计数器/编号类"参数（plotFileNumber / checkpointFileNumber 等），
+restart 时都要显式确认**——chk 存了一份，但 parfile 显式值会赢。
+
+---
+
+## L-019: IO 频率按物理时间分辨率设，不按步
+
+**首次发现日期**：2026-08-10（Sunliang_Xray 崩溃排查 + 6.7 GB 输出分析）
+**影响范围**：所有算例的 parfile 配置
+**严重度**：中（磁盘浪费；极端时触发 MPI-IO 层崩溃）
+
+### 问题
+
+`plotFileIntervalTime = 0.01e-09` < dt（≈1.35e-11）→ **每一步**写一个 4.7 MB
+plotfile：8041 步产出 1630 个文件、6.7 GB，且高频 ROMIO 集合写成为
+MPI-IO 崩溃（L-020 案）的触发条件。
+
+### 根因
+
+`plotFileIntervalTime` 是**模拟时间**间隔。设置时没和 dt 比较，语义理解偏差
+（以为是"隔多久写一次"的粗控制，实际设得比步长还小）。
+
+### 解决
+
+- 经验法则：**`plotFileIntervalTime ≥ 5×dt`，全算例 plt 总量 100~500 个**
+- 或按步控制：`plotFileIntervalStep = 50`
+- 已落地：Sunliang_Xray 源模板 + objdir parfile 均改 0.1e-09
+  （见 `agent/pitfalls/plotfile-interval-too-dense.md`）
+
+---
+
+## L-020: MPI 崩溃取证方法论——handle 解码 + 最小复现 + 沙箱 restart
+
+**首次发现日期**：2026-08-10（Sunliang_Xray `internal_Allreduce ... MPI_COMM_NULL` 排查）
+**影响范围**：所有 MPI 层诡异错误的诊断
+**严重度**：方法论（高价值）
+
+### 问题
+
+`MPI_Allreduce(..., count=1, MPI_INT, op=0x98000000, MPI_COMM_NULL)` 这种
+C 库内部的 MPI 错误，没有调用栈时看似无从下手。
+
+### 解决（可复用的取证链，按顺序，每步都是几分钟的廉价实验）
+
+1. **解码错误指纹**：MPICH handle 是编码值——`0x98000000`=第一个运行时创建的
+   op、`MPI_COMM_NULL` 等会符号化打印；**`MPI_INT`（C）vs `MPI_INTEGER`（Fortran）
+   直接区分调用方语言**，一刀切掉 FLASH 全部 Fortran 代码
+2. **穷举调用点**：在 objdir grep 全部 Allreduce，按 dtype/comm 实参过滤——
+   objdir 就是该二进制的精确源码集
+3. **反汇编找 op 创建者**：`objdump -d <lib>.so | grep Op_create`——谁创建用户
+   op，崩溃调用就在谁里面（本案：仅 ROMIO，HYPRE/HDF5 为 0）
+4. **最小 C 程序复现指纹**：5 行程序逐字复现错误 → 验证全部解码假设
+5. **沙箱 restart 复现**：从最近 chk 在 /tmp 沙箱续跑——**越过崩溃点 = 非确定性/
+   累积型故障；原地复现 = 确定性 bug**，直接决定修复策略（续跑 vs 改代码）
+
+### 为什么有效
+
+不依赖 core dump / debug 重编译（2.5h 的崩溃没法快速重跑）；
+每步实验都缩小嫌疑范围，最终收敛到唯一匹配（ROMIO two-phase consensus）。
+
+---
+
 ## 待补充（后续遇到时追加）
 
 - [ ] Phase 2 启动 flash-driver 时观察到的经验
@@ -1129,3 +1227,4 @@ species=cham,targ1,targ2,targ3 → HDF5 abort "name already exists" ✗
 | 2026-08-02 | 加 L-015（回答"X 做了什么"先讲完整故事线再讲细节）—— flash-multispecies 验收 Q2 反馈"先解释变量的含义和用途、何处定义、经过哪些步骤" | claude |
 | 2026-08-02 | 加 L-016（FLASH species 名有长度限制）—— Sunliang_laser_CH 实战调试发现 `targ1`（5 字符）导致 HDF5 "name already exists" abort；用户原有设计用 `tar1`（4 字符）就是为了绕过 | claude |
 | 2026-08-03 | 加 L-017（解决报错后自主询问是否沉淀到报错库）—— 用户反馈"报错库更新需要自主触发" | claude |
+| 2026-08-10 | 加 L-018（restart 三件套——parfile 显式值覆盖 chk 计数器）+ L-019（IO 频率按物理时间分辨率设）+ L-020（MPI 崩溃取证方法论）—— Sunliang_Xray ROMIO 崩溃排查 + 续跑完成实战 | claude |

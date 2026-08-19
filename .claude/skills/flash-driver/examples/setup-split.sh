@@ -25,4 +25,4 @@ grep "SplitDriver\|DEFAULT Split" cases/flame_split/setup_call
 # 编译运行
 cd cases/flame_split
 make -j4
-./flash4 -parfile=flash.par
+./flash4 -par_file flash.par

@@ -26,11 +26,12 @@ source_anchors:
 | **SimulationMain** | FLASH 源码里所有"算例模板"的根目录 `source/Simulation/SimulationMain/` | 每个算例一个子目录，含 Config + 初始化代码 + parfile |
 | **setup** | 一条命令 `./setup <算例名> [选项] -objdir=<目录>`，把算例所需的源码 + Makefile 收集到一个目录 | FLASH 没有顶层 Makefile，每个算例都"按需组装" |
 | **objdir** | setup 生成的"构建目录"，含 Makefile + 链接过来的源码 + 编译产物 | 隔离不同算例的构建；默认 `object/`，本机约定 `cases/<算例>/` |
+| **01-data** | objdir 下的运行输出子目录 `cases/<算例>/01-data/`——flash4 在这里启动（CWD），plt/chk/dat/log 全落这里 | **硬约束**：运行输出不散落在 objdir 根目录，保持编译区干净、数据集中可归档 |
 | **site** | 一台机器的编译器/库路径配置（`Makefile.h`） | 不同机器的 MPI/HDF5 路径不同；每个 site 一份 |
 | **make** | 在 objdir 里跑 `make -j4`，编译所有源码并链接出 `flash4` | 标准构建步骤；多核加速靠 `-jN` |
 | **flash4** | 编译产出的可执行文件（在 objdir 里）| 4.8 版本叫 flash4，老版本叫 flash3 等 |
 | **parfile** | 运行时参数文件（`flash.par` 等），含所有 runtime parameters | 改 parfile 不用重编译；用 `-parfile=<name>.par` 指定 |
-| **mpirun** | 启动 MPI 并行任务的命令，`mpirun -np N ./flash4 -parfile=flash.par` | FLASH 是 MPI 并行代码，必须用 mpirun 启动（即使 N=1）|
+| **mpirun** | 启动 MPI 并行任务的命令，`mpirun -np N ./flash4 -par_file flash.par`（在 01-data/ 里跑时写作 `mpirun -np N ../flash4 -par_file ../flash.par`） | FLASH 是 MPI 并行代码，必须用 mpirun 启动（即使 N=1）|
 | **checkpoint** | 模拟运行的"存档"文件（`*_hdf5_chk_<N>.h5`），含完整 grid state | 用于续跑（restart）；定期写 |
 | **plotfile** | 模拟运行的"快照"文件（`*_hdf5_plt_cnt_<N>.h5`），用于后处理/画图 | 不含全部内部状态，只含可视化的变量 |
 | **restart** | 从 checkpoint 续跑，避免从头开始 | 长时间模拟分段跑；算例中断后续跑 |
@@ -66,7 +67,7 @@ source_anchors:
 [1. setup] ─→ [2. make] ─→ [3. run] ─→ [4. restart/analysis]
    │             │             │             │
    │             │             │             └─ 从 chk 续跑 / 分析 plotfile
-   │             │             └─ mpirun ./flash4 → 写日志/plt/chk
+   │             │             └─ 在 01-data/ 里 mpirun ../flash4 → 写日志/plt/chk
    │             └─ 生成 flash4 可执行文件
    └─ 生成 objdir（Makefile + 源码链接 + parfile）
 ```
@@ -127,19 +128,23 @@ sudo mv /lib/x86_64-linux-gnu/libmpi.so.40.bak /lib/x86_64-linux-gnu/libmpi.so.4
 
 **为什么需要**：FLASH 是并行代码，即使单进程也必须用 mpirun 启动（初始化 MPI 环境）。
 
-**典型命令**：
+**典型命令**（**硬约束：在 `01-data/` 子目录里跑**，输出不散落在 objdir 根目录）：
 ```bash
 cd cases/LaserSlab
+mkdir -p 01-data && cd 01-data
 source /home/ubuntu/local/flash/FLASH4.8/FLASH/FLASH4.8/flash_env.sh
-mpirun -np 2 ./flash4 -parfile=flash.par 2>&1 | tee flash.log
+mpirun -np 2 ../flash4 -par_file ../flash.par 2>&1 | tee flash.log
 ```
 
 **为什么先 source flash_env.sh**：本机的 libmpi 冲突在运行时会触发段错误（SIGSEGV in Driver_initParallel.F90:92），flash_env.sh 设 LD_PRELOAD 让 mpich 的 libmpi.so.12 最先加载，避免冲突。
 
-**产物**：
+**为什么在 01-data/ 里跑**：CWD 决定所有输出的落点——plotfile/checkpoint 走 `output_directory`（默认 CWD），`.log` / `.dat` 永远写 CWD。在 01-data/ 启动 = 输出全隔离，objdir 根目录只留编译产物。
+
+**产物**（都在 `cases/<算例>/01-data/` 下）：
 - `flash.log`（运行日志，含 dt / nstep / simTime）
-- `*_hdf5_plt_cnt_<N>.h5`（plotfile，可视化用）
-- `*_hdf5_chk_<N>.h5`（checkpoint，续跑用）
+- `*_hdf5_plt_cnt_<N>`（plotfile，可视化用）
+- `*_hdf5_chk_<N>`（checkpoint，续跑用）
+- `<basenm>.dat` / `<basenm>.log`（标量时序 / 单元自带日志，如 `*_LaserEnergyProfile.dat`）
 
 **常见错误**：
 - `SIGSEGV in Driver_initParallel.F90:92`（libmpi 冲突，source flash_env.sh）
@@ -154,19 +159,21 @@ mpirun -np 2 ./flash4 -parfile=flash.par 2>&1 | tee flash.log
 
 **典型流程**：
 ```
-1. 看 objdir 里最新的 chk 编号
-   ls cases/<case>/*_hdf5_chk_*.h5 | tail -3
+1. 看 01-data/ 里最新的 chk 编号
+   ls cases/<case>/01-data/*_hdf5_chk_* | tail -3
    # 假设最新是 _chk_0020
 
-2. 改 flash.par：
-   restart = .true.
-   restartFile = "basenm_hdf5_chk_0020"  # 不带 .h5 后缀
+2. 改 flash.par（objdir 里的）——续跑三件套，缺一不可：
+   restart              = .true.
+   checkpointFileNumber = 20    # 读哪个 chk（编号对应 _chk_0020）
+   plotFileNumber       = <最新 plt 编号 + 1>  # 不设会从 0 重编号覆盖旧 plt！
 
 3. 用相同 setup 命令重 build（保险——确保 NXB/species 一致）
 
-4. 再跑：
+4. 再跑（在 01-data/ 里）：
+   cd cases/<case>/01-data
    source flash_env.sh
-   mpirun -np N ./flash4 -parfile=flash.par
+   mpirun -np N ../flash4 -par_file ../flash.par
 ```
 
 **关键陷阱**：NXB/NYB/nDim/species 数必须和原算例一致（编译期 baked in），否则 abort。详见 `agent/pitfalls/restart-incompatibility.md`。
@@ -303,23 +310,23 @@ cat cases/<case>/setup_defines
 # 看 parfile
 cat cases/<case>/flash.par | less
 
-# 查找最新 checkpoint
-ls cases/<case>/*_hdf5_chk_*.h5 | sort | tail -3
+# 查找最新 checkpoint（在 01-data/ 里）
+ls cases/<case>/01-data/*_hdf5_chk_* | sort | tail -3
 
 # 查找最新 plotfile
-ls cases/<case>/*_hdf5_plt_*.h5 | sort | tail -3
+ls cases/<case>/01-data/*_hdf5_plt_* | sort | tail -3
 
 # 看运行进度（最后 20 行日志）
-tail -20 cases/<case>/flash.log
+tail -20 cases/<case>/01-data/flash.log
 
 # 看 abort 位置
-grep -B2 -A10 "abort\|forrtl" cases/<case>/flash.log | head -40
+grep -B2 -A10 "abort\|forrtl" cases/<case>/01-data/flash.log | head -40
 
 # 看 MPI 错误
-grep -i "mpi\|sigsegv" cases/<case>/flash.log | head -20
+grep -i "mpi\|sigsegv" cases/<case>/01-data/flash.log | head -20
 
 # 看 dt 演化
-grep -E "nstep|simTime" cases/<case>/flash.log | tail -30
+grep -E "nstep|simTime" cases/<case>/01-data/flash.log | tail -30
 
 # source 运行环境
 source /home/ubuntu/local/flash/FLASH4.8/FLASH/FLASH4.8/flash_env.sh

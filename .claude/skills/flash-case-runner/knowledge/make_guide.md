@@ -148,8 +148,9 @@ sudo mv /lib/x86_64-linux-gnu/libmpi.so.40.bak /lib/x86_64-linux-gnu/libmpi.so.4
 # 编译时会用 FFLAGS_DEBUG（-O0 -g -ffpe-trap=invalid,zero,overflow -fbounds-check）
 cd cases/LaserSlab_debug && make -j4
 
-# 跑时会捕获浮点异常（NaN/除零立即 abort）
-mpirun -np 2 ./flash4 -parfile=flash.par
+# 跑时会捕获浮点异常（NaN/除零立即 abort）——在 01-data/ 里跑（硬约束）
+mkdir -p 01-data && cd 01-data
+mpirun -np 2 ../flash4 -par_file ../flash.par
 ```
 
 **-debug 做什么**（L-011 讲为什么）：

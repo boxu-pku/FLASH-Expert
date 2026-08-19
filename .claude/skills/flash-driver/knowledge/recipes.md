@@ -214,7 +214,7 @@ setup 命令只决定**编译**支持多线程，运行时还要设 `OMP_NUM_THR
 ```bash
 # 4 个 MPI process × 8 线程 = 32 核
 export OMP_NUM_THREADS=8
-mpirun -np 4 ./flash4 -parfile=flash.par
+mpirun -np 4 ./flash4 -par_file flash.par
 ```
 
 ### 4.4 激光算例的多线程
@@ -340,7 +340,7 @@ cd cases/mycase
 # 把 chk 文件复制到 01-data/（如果路径不一样）
 cp /path/to/backup/mycase_hdf5_chk_0020 01-data/
 
-./flash4 -parfile=flash_restart.par
+./flash4 -par_file flash_restart.par
 ```
 
 ### 6.4 注意事项

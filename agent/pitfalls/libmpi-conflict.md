@@ -4,7 +4,7 @@ category: 编译/链接期
 machine: ares (本机)
 severity: warning（可忽略）→ fatal（运行时如果 libmpi.so.40 在 loader path）
 first_seen: 2025-11-12
-last_verified: 2026-08-02
+last_verified: 2026-08-14
 verifier: claude
 status: stable
 tags:
@@ -81,6 +81,15 @@ env LD_PRELOAD=/home/ubuntu/local/flash/myFLASH4.8/mpich/lib/libmpi.so \
 - 66 步跑完，checkpoint + plotfile 正常写入
 - 零 MPI 错误
 
+**⚠️ 2026-08-14 系统恶化观察（ICF1D_CH 实战）**：
+- 系统 `libmpi.so.40` 升级后，**连之前能跑的 ICF3D_CH flash4 也 SIGSEGV**（同样 Driver_initParallel.F90:92，
+  MPI_Comm_Rank）。即历史可执行文件在系统库更新后失效——环境是活的，重跑旧 case 也可能中招。
+- 诊断特征：`readelf -d flash4 | grep NEEDED` 显示同时有 `libmpi.so.40`（系统 OpenMPI）和 mpich 库；
+  `ldd flash4` 看到两个 libmpi。
+- 本次运行时用 `export LD_PRELOAD=/home/ubuntu/local/flash/myFLASH4.8/mpich/lib/libmpi.so.12`
+  （注意指向具体 .so.12）+ `LD_LIBRARY_PATH` 含 hypre/hdf5/mpich 三个 lib，mpirun -np 1 正常跑完。
+- 本机 sudo 需要密码，方案 1（sudo mv）无法自动执行，**运行时优先用 LD_PRELOAD**。
+
 **注意**：
 - 编译期（make）仍需方案 1（sudo mv），因为 ld 不支持 LD_PRELOAD
 - LD_PRELOAD 只解决**运行时** loader 冲突
@@ -95,6 +104,23 @@ LFLAGS_OPT = -ggdb -o -Wl,-rpath,${MPI_PATH}/lib
 ```
 
 `-Wl,-rpath` 告诉链接器把 mpich 路径写进可执行文件的 RPATH，运行时优先用这个。
+
+### 方案 2b：写进 bashrc（推荐，固化 LD_PRELOAD）
+
+2026-08-14 验证：把 LD_PRELOAD 固化进 bashrc，运行前 source 一次即可，无需每次手动 export、无需 sudo。
+本机专用 bashrc：`/home/ubuntu/local/flash/myFLASH4.8/bashrc_myflash48`（含 mpich/hdf5/hypre 的
+LD_LIBRARY_PATH + `export LD_PRELOAD=$MPI_HOME/lib/libmpi.so.12`）。
+
+```bash
+source /home/ubuntu/local/flash/myFLASH4.8/bashrc_myflash48
+mpirun -np N ./flash4 -par_file flash.par   # 正常启动, 无 SIGSEGV
+```
+
+> ⚠️ 注意：旧的 `FLASH4.6.2/bashrc_mpich4112` 只设 LD_LIBRARY_PATH、**没有 LD_PRELOAD**，且路径
+> 是 FLASH4.6.2/（与 myFLASH4.8 库不匹配）。LD_LIBRARY_PATH 只能让 loader 找到 mpich 库，**无法阻止**
+> libmpi.so.40（若 flash4 编译时已把它链接进 NEEDED）被加载 → 仍会段错误。必须 LD_PRELOAD。
+> 之前 bashrc 能跑是因为当时 flash4 编译时移走过 libmpi.so.40（方案1），NEEDED 干净；一旦重新编译
+> 没移走（sudo 需密码），bashrc 就不够，需要 LD_PRELOAD 兜底。
 
 ### 方案 4：环境变量（每次会话做）
 

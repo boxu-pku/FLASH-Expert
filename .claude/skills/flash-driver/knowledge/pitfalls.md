@@ -378,7 +378,7 @@ setup 加了 `threadBlockList=true`，但运行时只用了 1 核。
 export OMP_NUM_THREADS=8
 
 # 启动
-mpirun -np 4 ./flash4 -parfile=flash.par
+mpirun -np 4 ./flash4 -par_file flash.par
 
 # 验证 OpenMP 启用
 grep "FLASH_OPENMP" cases/my_case/setup_defines

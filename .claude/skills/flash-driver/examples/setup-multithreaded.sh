@@ -33,7 +33,7 @@ make -j4
 
 # 运行（设 OpenMP 线程数）
 export OMP_NUM_THREADS=8       # 每 MPI process 8 个线程
-mpirun -np 4 ./flash4 -parfile=flash.par
+mpirun -np 4 ./flash4 -par_file flash.par
 # → 4 × 8 = 32 核并行
 
 # 验证 OpenMP 启用

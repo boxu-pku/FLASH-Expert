@@ -19,7 +19,7 @@
 #          -objdir=cases/laser_6beams
 #
 #   2. cd cases/laser_6beams && make -j4
-#   3. ./flash4 -parfile=flash.par
+#   3. ./flash4 -par_file flash.par
 #
 # 参数单位速查：
 #   ed_wavelength      = μm

@@ -27,8 +27,8 @@ bash /home/ubuntu/local/flash/FLASH4.8/FLASH/FLASH4.8/.claude/skills/flash-case-
 2. 处理 libmpi 冲突（sudo mv）
 3. make -j4
 4. source flash_env.sh
-5. mpirun -np 2 ./flash4
-6. 检查产物（plotfile / checkpoint / 日志末尾）
+5. 在 `cases/Sedov/01-data/` 里 `mpirun -np 2 ../flash4`（硬约束：输出只落 01-data/）
+6. 检查产物（plotfile / checkpoint / 日志末尾，都在 01-data/ 里）
 
 ### run-laser-slab.sh
 
@@ -45,7 +45,7 @@ bash /home/ubuntu/local/flash/FLASH4.8/FLASH/FLASH4.8/.claude/skills/flash-case-
 2. 处理 libmpi 冲突（sudo mv）
 3. make -j4（3-5 分钟）
 4. source flash_env.sh（关键——防 SIGSEGV）
-5. mpirun ./flash4
+5. 在 `cases/LaserSlab/01-data/` 里 `mpirun ../flash4`（硬约束：输出只落 01-data/）
 6. 检查产物 + 验证 libmpi 链接（应该是 mpich .12，不是 OpenMPI .40）
 
 **2026-08-02 实战验证**：本脚本流程跑通 66 步，零 MPI 错误。
@@ -53,8 +53,8 @@ bash /home/ubuntu/local/flash/FLASH4.8/FLASH/FLASH4.8/.claude/skills/flash-case-
 ### flash_log_parser.sh
 
 ```bash
-# 分析日志
-bash /home/ubuntu/local/flash/FLASH4.8/FLASH/FLASH4.8/.claude/skills/flash-case-runner/examples/flash_log_parser.sh cases/LaserSlab/flash.log
+# 分析日志（在 01-data/ 里）
+bash /home/ubuntu/local/flash/FLASH4.8/FLASH/FLASH4.8/.claude/skills/flash-case-runner/examples/flash_log_parser.sh cases/LaserSlab/01-data/flash.log
 ```
 
 **提取什么**：

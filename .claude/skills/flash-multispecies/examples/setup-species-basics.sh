@@ -40,7 +40,7 @@ setup_laserslab() {
         +mgd mgd_meshgroups=6 \
         -objdir=cases/LaserSlab \
         -parfile=example.par
-    echo "==> 完成：cd cases/LaserSlab && make -j4 && ./flash4 -parfile=flash.par"
+    echo "==> 完成：cd cases/LaserSlab && make -j4 && ./flash4 -par_file flash.par"
 }
 
 # ════════════════════════════════════════════════════════════════════════
@@ -59,7 +59,7 @@ setup_sunliang() {
         mgd_meshgroups=6 \
         -parfile=example_xubo.par \
         -objdir=cases/Sunliang_laser_CH
-    echo "==> 完成：cd cases/Sunliang_laser_CH && make -j4 && ./flash4 -parfile=flash.par"
+    echo "==> 完成：cd cases/Sunliang_laser_CH && make -j4 && ./flash4 -par_file flash.par"
 }
 
 # ════════════════════════════════════════════════════════════════════════
@@ -111,7 +111,7 @@ echo "  2. 确认 parfile 物种段："
 echo "     grep -E '^ms_|^eos_|^op_' cases/<case>/flash.par"
 echo ""
 echo "  3. 编译 + 运行："
-echo "     cd cases/<case> && make -j4 && ./flash4 -parfile=flash.par"
+echo "     cd cases/<case> && make -j4 && ./flash4 -par_file flash.par"
 echo ""
 echo "  4. 验证物种初始化（看日志）："
 echo "     grep -A 20 'Initially defined values of species' 01-data/<basenm>.log"

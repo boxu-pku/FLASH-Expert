@@ -27,9 +27,11 @@ source_anchors:
 ### 1.2 run 的端到端旅程
 
 ```
-1. 用户 source flash_env.sh（本机必需，设 LD_PRELOAD）
+1. 用户 cd cases/<case>/01-data（硬约束：CWD=01-data，所有输出落这里）
    ↓
-2. mpirun -np 2 ./flash4 -parfile=flash.par
+2. source flash_env.sh（本机必需，设 LD_PRELOAD）
+   ↓
+3. mpirun -np 2 ../flash4 -par_file ../flash.par
    ↓
 3. MPI 初始化（MPI_COMM_WORLD 建立）
    ↓ 这里曾出 SIGSEGV（libmpi 冲突）—— flash_env.sh 解决
@@ -131,9 +133,9 @@ echo "FLASH 4.8 运行环境已配置 ..."
 cd /home/ubuntu/local/flash/FLASH4.8/FLASH/FLASH4.8
 source flash_env.sh
 
-# 然后直接跑
-cd cases/LaserSlab
-mpirun -np 2 ./flash4 -parfile=flash.par
+# 然后进 01-data/ 跑（硬约束：输出只落 01-data/，不散落 objdir 根目录）
+cd cases/LaserSlab/01-data
+mpirun -np 2 ../flash4 -par_file ../flash.par
 ```
 
 **为什么用 source 不用 bash**：
@@ -144,8 +146,8 @@ mpirun -np 2 ./flash4 -parfile=flash.par
 
 ```bash
 # 直接跑（不 source）
-cd cases/LaserSlab
-mpirun -np 2 ./flash4 -parfile=flash.par
+cd cases/LaserSlab/01-data
+mpirun -np 2 ../flash4 -par_file ../flash.par
 
 # 可能的错误：
 # 1. SIGSEGV in Driver_initParallel.F90:92（libmpi 冲突）
@@ -170,23 +172,31 @@ source /home/ubuntu/local/flash/FLASH4.8/FLASH/FLASH4.8/flash_env.sh
 
 ### 3.1 完整命令（含环境配置）
 
+> **硬约束（2026-08-10 起）**：flash4 必须在 `cases/<case>/01-data/` 下启动（CWD=01-data）。
+> 所有运行输出（plt / chk / .dat / .log）落 `01-data/`，objdir 根目录只留编译产物和 parfile。
+>
+> **为什么用 CWD 法而不用 parfile `output_directory` 参数**：`output_directory` 只作用于 plt/chk
+> （`source/IO/IOMain/io_getOutputName.F90` 拼路径），`.log` 和 `.dat`（如 `*_LaserEnergyProfile.dat`）
+> 始终写 CWD——只有在 01-data/ 里启动才能一刀切全覆盖。
+
 ```bash
 cd /home/ubuntu/local/flash/FLASH4.8/FLASH/FLASH4.8
 
 # 1. source 运行环境（每次开新 shell 都要做）
 source flash_env.sh
 
-# 2. 进 case 目录
+# 2. 进 case 的 01-data/ 目录（首次先创建）
 cd cases/LaserSlab
+mkdir -p 01-data && cd 01-data
 
-# 3. 看一眼 parfile（可选——确认参数）
-less flash.par
+# 3. 看一眼 parfile（可选——确认参数；parfile 留在 objdir 根目录）
+less ../flash.par
 
-# 4. 跑（前台，看输出）
-mpirun -np 2 ./flash4 -parfile=flash.par 2>&1 | tee flash.log
+# 4. 跑（前台，看输出）——flash4 和 parfile 都在上一级，用 ../ 引用
+mpirun -np 2 ../flash4 -par_file ../flash.par 2>&1 | tee flash.log
 
 # 或者后台跑（长算例）
-nohup mpirun -np 4 ./flash4 -parfile=flash.par > flash.log 2>&1 &
+nohup mpirun -np 4 ../flash4 -par_file ../flash.par > flash.log 2>&1 &
 echo $!  # 记录 PID
 tail -f flash.log  # 跟踪进度
 ```
@@ -218,11 +228,11 @@ nproc
 ### 3.3 后台跑长算例
 
 ```bash
-cd cases/LaserSlab
-source ../../flash_env.sh
+cd cases/LaserSlab/01-data
+source ../../../flash_env.sh
 
 # 后台启动（nohup 让进程不受 shell 退出影响）
-nohup mpirun -np 4 ./flash4 -parfile=flash.par > flash.log 2>&1 &
+nohup mpirun -np 4 ../flash4 -par_file ../flash.par > flash.log 2>&1 &
 FLASH_PID=$!
 echo "FLASH PID: $FLASH_PID"
 
@@ -243,13 +253,13 @@ pkill -f flash4
 
 parfile 是**运行时**读，改了不用重 make：
 ```bash
-# 改 parfile（如 dt 改小、写的频率改高）
+# 改 parfile（如 dt 改小、写的频率改高）——parfile 在 objdir 根目录
 vi cases/LaserSlab/flash.par
 
-# 直接重跑
-cd cases/LaserSlab
-source ../../flash_env.sh
-mpirun -np 2 ./flash4 -parfile=flash.par
+# 直接重跑（在 01-data/ 里）
+cd cases/LaserSlab/01-data
+source ../../../flash_env.sh
+mpirun -np 2 ../flash4 -par_file ../flash.par
 ```
 
 **注意**：改 parfile 会从头开始（除非 restart）。想续跑看 §5。
@@ -261,32 +271,32 @@ mpirun -np 2 ./flash4 -parfile=flash.par
 ```bash
 # 用 examples/flash_log_parser.sh 自动提取
 bash /home/ubuntu/local/flash/FLASH4.8/FLASH/FLASH4.8/.claude/skills/flash-case-runner/examples/flash_log_parser.sh \
-  cases/LaserSlab/flash.log
+  cases/LaserSlab/01-data/flash.log
 ```
 
 **或手动 grep**：
 
 ```bash
 # 1. 看最后进度
-tail -30 cases/<case>/flash.log
+tail -30 cases/<case>/01-data/flash.log
 
 # 2. 看 dt 演化（dt 应该缓慢变化）
-grep -E "^\s*dt\s|time step|nstep" cases/<case>/flash.log | tail -30
+grep -E "^\s*dt\s|time step|nstep" cases/<case>/01-data/flash.log | tail -30
 
 # 3. 看 simTime 推进
-grep "simTime\|Simulation time" cases/<case>/flash.log | tail -20
+grep "simTime\|Simulation time" cases/<case>/01-data/flash.log | tail -20
 
 # 4. 看 block 数变化（AMR）
-grep -i "leaf block\|total block" cases/<case>/flash.log | tail -20
+grep -i "leaf block\|total block" cases/<case>/01-data/flash.log | tail -20
 
 # 5. 找 NaN / Inf / below floor
-grep -i "nan\|inf\|below floor" cases/<case>/flash.log | head -20
+grep -i "nan\|inf\|below floor" cases/<case>/01-data/flash.log | head -20
 
 # 6. 找 abort / Error / forrtl
-grep -B2 -A20 -i "abort\|forrtl: error\|SIGSEGV\|MPI_ERRORS" cases/<case>/flash.log | head -50
+grep -B2 -A20 -i "abort\|forrtl: error\|SIGSEGV\|MPI_ERRORS" cases/<case>/01-data/flash.log | head -50
 
 # 7. 看写 plotfile / checkpoint 的次数
-grep -i "writing\|plotfile\|checkpoint" cases/<case>/flash.log | tail -20
+grep -i "writing\|plotfile\|checkpoint" cases/<case>/01-data/flash.log | tail -20
 ```
 
 ### 4.2 正常日志结构
@@ -361,7 +371,7 @@ nstep = 104, dt = 1.234e-14  ← 继续变小
 **诊断**：
 ```bash
 # 看哪个 dt 限制项主导
-grep -i "dt.*limit\|cfl\|hx_dt" cases/<case>/flash.log | tail -20
+grep -i "dt.*limit\|cfl\|hx_dt" cases/<case>/01-data/flash.log | tail -20
 ```
 
 **修复**：降 CFL（`hydro_cfl = 0.1` 而非 0.8）或排查物理。
@@ -398,33 +408,38 @@ LaserSlab_hdf5_chk_0020.h5
 ### 5.3 续跑流程（完整故事线，L-015）
 
 ```
-1. 找最新 checkpoint
-   ls cases/<case>/*_hdf5_chk_*.h5 | sort | tail -3
+1. 找最新 checkpoint（在 01-data/ 里）
+   ls cases/<case>/01-data/*_hdf5_chk_* | sort | tail -3
 
-2. 改 flash.par：
-   restart = .true.
-   restartFile = "<basenm>_hdf5_chk_<NNNN>"  # 不带 .h5
+2. 改 flash.par（objdir 根目录那份）——续跑三件套，缺一不可：
+   restart              = .true.
+   checkpointFileNumber = <NNNN>  # 读哪个 chk（编号对应 _hdf5_chk_<NNNN>）
+   plotFileNumber       = <最新 plt 编号 + 1>  # ⚠️ 不设会从 0 重编号，覆盖旧 plotfile！
 
 3. 用相同 setup 命令重 build（保险——确保 NXB/species 一致）
    ⚠️ 不能改 setup-variables，否则 abort（见 §5.5）
 
-4. 跑：
+4. 跑（在 01-data/ 里，硬约束）：
+   cd cases/<case>/01-data
    source flash_env.sh
-   mpirun -np N ./flash4 -parfile=flash.par
+   mpirun -np N ../flash4 -par_file ../flash.par
 ```
 
 ### 5.4 parfile 续跑参数
 
 ```fortran
-# flash.par 续跑段
-restart = .true.
-restartFile = "LaserSlab_hdf5_chk_0020"
+# flash.par 续跑段——三件套，缺一不可
+restart              = .true.
+checkpointFileNumber = 20     # 读哪个 chk（编号对应 <basenm>_hdf5_chk_0020）
+plotFileNumber       = 1630   # 写 plt 从几号继续 = 原序列最后编号 + 1
 
 # 其他参数（如 sim_maxTime）通常保留
 sim_maxTime = 1.0e-9  # 续跑到这个时间结束
 ```
 
-**注意**：`restartFile` 不带 `.h5` 后缀，是文件名前缀。
+**注意**（2026-08-10 实证纠正）：
+- ~~`restartFile`~~ **不是有效参数**——FLASH 4.8 会报 `ignoring unknown parameter "restartFile"` 并从 0 号 chk 读。续跑靠 `checkpointFileNumber`，文件名由 basenm + 编号自动拼出
+- **`plotFileNumber` 必须设**——chk 里虽存了 plt 计数器，但 parfile 的显式值（原算例留的 0）优先级更高，不设会把新 plt 从 0 重新编号并**静默覆盖**旧 plotfile。见 `agent/pitfalls/restart-plotfilenumber-overwrite.md`
 
 ### 5.5 续跑兼容性检查（关键陷阱）
 
@@ -438,8 +453,8 @@ cat cases/<case>/setup_flags | grep -E "NXB|NYB|NZB|N_DIM"
 # 2. 看当前 flash4 的编译期 defines
 strings flash4 | grep -E "NXB=|N_DIM=" | head
 
-# 3. 看 checkpoint 里的元数据（用 h5dump）
-h5dump -A cases/<case>/<basenm>_hdf5_chk_0020.h5 | grep -i "nxb\|nyb\|integer"
+# 3. 看 checkpoint 里的元数据（用 h5dump；chk 在 01-data/ 里）
+h5dump -A cases/<case>/01-data/<basenm>_hdf5_chk_0020 | grep -i "nxb\|nyb\|integer"
 
 # 4. 看 species 数
 cat cases/<case>/setup_vars | grep species
@@ -458,19 +473,20 @@ cat cases/<case>/setup_vars | grep species
 cd /home/ubuntu/local/flash/FLASH4.8/FLASH/FLASH4.8
 source flash_env.sh
 
-cd cases/LaserSlab
+cd cases/LaserSlab/01-data
 
-# 1. 找最新 chk
-LATEST_CHK=$(ls LaserSlab_hdf5_chk_*.h5 | sort | tail -1 | sed 's/\.h5$//')
+# 1. 找最新 chk（就在本目录）
+LATEST_CHK=$(ls *_hdf5_chk_* | sort | tail -1)
 echo "Latest chk: $LATEST_CHK"
 
-# 2. 改 parfile（手动或 sed）
-# 在 flash.par 里加：
-#   restart = .true.
-#   restartFile = "$LATEST_CHK"
+# 2. 改 parfile（手动或 sed；改 objdir 根目录那份 ../flash.par）
+# 在 ../flash.par 里设三件套：
+#   restart              = .true.
+#   checkpointFileNumber = <最新 chk 编号>
+#   plotFileNumber       = <最新 plt 编号 + 1>   # 不设会覆盖旧 plt！
 
-# 3. 跑
-mpirun -np 2 ./flash4 -parfile=flash.par 2>&1 | tee flash_restart.log
+# 3. 跑（CWD=01-data，chk 和续跑输出都在本目录）
+mpirun -np 2 ../flash4 -par_file ../flash.par 2>&1 | tee flash_restart.log
 ```
 
 ### 5.7 续跑后文件编号
@@ -487,13 +503,13 @@ mpirun -np 2 ./flash4 -parfile=flash.par 2>&1 | tee flash_restart.log
 
 ```bash
 # 1. 看完整 flash.log（特别是 abort 段）
-grep -B2 -A30 -i "abort\|forrtl\|sigsegv\|mpi_error" cases/<case>/flash.log | head -100
+grep -B2 -A30 -i "abort\|forrtl\|sigsegv\|mpi_error" cases/<case>/01-data/flash.log | head -100
 
 # 2. 看最后 50 行（看 abort 前 dt / nstep）
-tail -50 cases/<case>/flash.log
+tail -50 cases/<case>/01-data/flash.log
 
 # 3. 看 NaN 检测
-grep -i "nan\|inf\|below floor" cases/<case>/flash.log | head -20
+grep -i "nan\|inf\|below floor" cases/<case>/01-data/flash.log | head -20
 
 # 4. 看 setup_call（确认 setup 命令）
 cat cases/<case>/setup_call
@@ -502,7 +518,7 @@ cat cases/<case>/setup_call
 grep -E "useXxx|sim_|cfl|ed_|mgd_|hx_" cases/<case>/flash.par | head -40
 
 # 6. 看 AMR block 数变化
-grep -i "leaf block\|total block" cases/<case>/flash.log | tail -30
+grep -i "leaf block\|total block" cases/<case>/01-data/flash.log | tail -30
 
 # 7. 看 ldd flash4（确认 libmpi 链接）
 ldd cases/<case>/flash4 | grep -i "mpi\|hdf5\|hypre"
@@ -524,7 +540,7 @@ ldd cases/<case>/flash4 | grep -i "mpi\|hdf5\|hypre"
 **贴现场后定位**：
 ```bash
 # 看哪一步炸
-grep -B5 "forrtl: error (65)" cases/<case>/flash.log
+grep -B5 "forrtl: error (65)" cases/<case>/01-data/flash.log
 ```
 
 **详细**：见 `agent/pitfalls/ffpe-trap-and-nan.md` + `flash-pitfall-finder`。
@@ -535,7 +551,7 @@ grep -B5 "forrtl: error (65)" cases/<case>/flash.log
 
 **贴现场**：
 ```bash
-grep -B5 -A10 "ed_" cases/<case>/flash.log | head -50
+grep -B5 -A10 "ed_" cases/<case>/01-data/flash.log | head -50
 grep -E "^useLaser|^ed_" cases/<case>/flash.par
 ```
 
@@ -561,8 +577,9 @@ grep -E "^useLaser|^ed_" cases/<case>/flash.par
 **G. mpirun 报错**
 
 ```bash
-# 看具体错
-mpirun -np 2 ./flash4 -parfile=flash.par 2>&1 | head -30
+# 看具体错（在 01-data/ 里跑）
+cd cases/<case>/01-data
+mpirun -np 2 ../flash4 -par_file ../flash.par 2>&1 | head -30
 ```
 
 常见：
@@ -573,47 +590,47 @@ mpirun -np 2 ./flash4 -parfile=flash.par 2>&1 | head -30
 ## 7. 速查：运行命令模板
 
 ```bash
-# 标准 run（前台）
-cd cases/<case>
-source ../../flash_env.sh
-mpirun -np 2 ./flash4 -parfile=flash.par 2>&1 | tee flash.log
+# 标准 run（前台）——硬约束：在 01-data/ 里跑
+cd cases/<case>/01-data
+source ../../../flash_env.sh
+mpirun -np 2 ../flash4 -par_file ../flash.par 2>&1 | tee flash.log
 
 # 后台 run（长算例）
-cd cases/<case>
-source ../../flash_env.sh
-nohup mpirun -np 4 ./flash4 -parfile=flash.par > flash.log 2>&1 &
+cd cases/<case>/01-data
+source ../../../flash_env.sh
+nohup mpirun -np 4 ../flash4 -par_file ../flash.par > flash.log 2>&1 &
 tail -f flash.log
 
 # restart 续跑
-cd cases/<case>
-source ../../flash_env.sh
-# 改 flash.par 加：restart = .true. / restartFile = "..."
-mpirun -np 2 ./flash4 -parfile=flash.par 2>&1 | tee flash_restart.log
+cd cases/<case>/01-data
+source ../../../flash_env.sh
+# 改 ../flash.par 设三件套：restart=.true. / checkpointFileNumber=<最新chk号> / plotFileNumber=<最新plt号+1>
+mpirun -np 2 ../flash4 -par_file ../flash.par 2>&1 | tee flash_restart.log
 
 # Debug run（-debug build 的 objdir）
-cd cases/<case>_debug
-source ../../flash_env.sh
-mpirun -np 2 ./flash4 -parfile=flash.par 2>&1 | tee flash_debug.log
+cd cases/<case>_debug/01-data
+source ../../../flash_env.sh
+mpirun -np 2 ../flash4 -par_file ../flash.par 2>&1 | tee flash_debug.log
 ```
 
 ## 8. 怎么知道跑通了
 
 ```bash
 # 1. 看最后几行日志
-tail -10 cases/<case>/flash.log
+tail -10 cases/<case>/01-data/flash.log
 # 应该看到：
 # "Simulation completed successfully" 或
 # "Reached maximum simulation time"
 
 # 2. 看 plotfile 数量
-ls cases/<case>/*_hdf5_plt_*.h5 | wc -l
+ls cases/<case>/01-data/*_hdf5_plt_* | wc -l
 
 # 3. 看最新 plotfile 时间
-ls -lh cases/<case>/*_hdf5_plt_*.h5 | tail -5
+ls -lh cases/<case>/01-data/*_hdf5_plt_* | tail -5
 
 # 4. 看 checkpoint 数
-ls cases/<case>/*_hdf5_chk_*.h5 | wc -l
+ls cases/<case>/01-data/*_hdf5_chk_* | wc -l
 
 # 5. 验证最新 plotfile 没坏
-h5dump -H cases/<case>/<basenm>_hdf5_plt_cnt_0050.h5 | head -20
+h5dump -H cases/<case>/01-data/<basenm>_hdf5_plt_cnt_0050 | head -20
 ```

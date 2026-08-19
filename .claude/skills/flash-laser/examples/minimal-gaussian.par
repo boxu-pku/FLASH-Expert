@@ -14,7 +14,7 @@
 #          -objdir=cases/laser_minimal
 #
 #   2. cd cases/laser_minimal && make -j4
-#   3. ./flash4 -parfile=flash.par
+#   3. ./flash4 -par_file flash.par
 #
 # 参数单位速查（不要搞错）：
 #   ed_wavelength      = μm  （不是 cm/nm！）

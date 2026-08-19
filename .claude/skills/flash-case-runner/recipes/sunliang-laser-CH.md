@@ -96,21 +96,24 @@ ls -lh flash4
 
 ### 步骤 3: run
 
+> **硬约束**：在 `cases/Sunliang_laser_CH/01-data/` 里启动——输出全落 01-data，objdir 根目录只留编译产物。
+
 ```bash
 cd /home/ubuntu/local/flash/FLASH4.8/FLASH/FLASH4.8
 source flash_env.sh
 
 cd cases/Sunliang_laser_CH
+mkdir -p 01-data && cd 01-data
 
-# 后台跑
-nohup mpirun -np 2 ./flash4 -parfile=flash.par > flash.log 2>&1 &
+# 后台跑（flash4 和 flash.par 在上一级，用 ../ 引用）
+nohup mpirun -np 2 ../flash4 -par_file ../flash.par > flash.log 2>&1 &
 tail -f flash.log
 ```
 
 ### 步骤 4: 看结果
 
 ```bash
-cd cases/Sunliang_laser_CH
+cd cases/Sunliang_laser_CH/01-data
 
 # 看进度
 tail -20 flash.log
@@ -123,8 +126,8 @@ grep -A4 "Multispecies_init" flash.log | head -10
 grep "ed_.*beam" flash.log | head -10
 
 # 看 plotfile / checkpoint
-ls *_hdf5_plt_*.h5 | tail -5
-ls *_hdf5_chk_*.h5 | tail -5
+ls *_hdf5_plt_* | tail -5
+ls *_hdf5_chk_* | tail -5
 ```
 
 ## 3. example_xubo.par 关键段
@@ -221,7 +224,8 @@ Sunliang 算例没有专门的一键脚本（参考 `examples/run-laser-slab.sh`
 cd /home/ubuntu/local/flash/FLASH4.8/FLASH/FLASH4.8
 source flash_env.sh
 cd cases/Sunliang_laser_CH
-nohup mpirun -np 2 ./flash4 -parfile=flash.par > flash.log 2>&1 &
+mkdir -p 01-data && cd 01-data   # 硬约束：在 01-data/ 里跑
+nohup mpirun -np 2 ../flash4 -par_file ../flash.par > flash.log 2>&1 &
 tail -f flash.log
 ```
 
