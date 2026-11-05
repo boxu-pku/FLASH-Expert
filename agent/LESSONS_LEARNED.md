@@ -329,7 +329,7 @@ flash-source-reader 通过这个机制发现了 L-001（"讲逻辑"）和 L-002�
 - `flash-pitfall-finder`：报错诊断时按上述规则
 - `flash-source-reader`：讲函数时如有 abort 逻辑或运算，贴相关代码
 - `flash-laser/knowledge/pitfalls.md`：每个 abort 都贴对应 FLASH 源码
-- `agent/pitfalls/*.md`：跨领域踩坑，按错误类型决定贴不贴
+- `skills/flash-pitfall-finder/knowledge/pitfalls/*.md`：跨领域踩坑，按错误类型决定贴不贴
 - Phase 2+ 新 skill 的 pitfalls：写的时候就含触发代码（如适用）
 
 ### 操作流程（Agent 实际怎么做）
@@ -1060,7 +1060,7 @@ species=cham,tar1,tar2,tar3
 
 本经验同时写入：
 - `agent/LESSONS_LEARNED.md` L-016（此处）
-- `agent/pitfalls/` 建议新建 `species-name-length.md`（如需要独立踩坑条目）
+- `skills/flash-pitfall-finder/knowledge/pitfalls/` 建议新建 `species-name-length.md`（如需要独立踩坑条目）
 
 ### 实战验证
 
@@ -1085,7 +1085,7 @@ species=cham,targ1,targ2,targ3 → HDF5 abort "name already exists" ✗
 
 **每次成功解决一个报错后，Agent 应自主询问**：
 
-> "这个问题已解决。要不要把它沉淀到报错库（`agent/pitfalls/`）？"
+> "这个问题已解决。要不要把它沉淀到报错库（`skills/flash-pitfall-finder/knowledge/pitfalls/`）？"
 
 **触发条件**（满足任一即触发）：
 1. abort 修复后算例跑通
@@ -1097,9 +1097,9 @@ species=cham,targ1,targ2,targ3 → HDF5 abort "name already exists" ✗
 
 ### 沉淀流程（用户同意后）
 
-1. 按 `agent/TEMPLATES/pitfall.md` 模板写新条目到 `agent/pitfalls/<topic>.md`
-2. 更新 `agent/pitfalls/README.md` 文件清单
-3. 简短报告："已沉淀到 `agent/pitfalls/<file>.md`"
+1. 按 `agent/TEMPLATES/pitfall.md` 模板写新条目到 `skills/flash-pitfall-finder/knowledge/pitfalls/<topic>.md`
+2. 更新 `skills/flash-pitfall-finder/knowledge/pitfalls/README.md` 文件清单
+3. 简短报告："已沉淀到 `skills/flash-pitfall-finder/knowledge/pitfalls/<file>.md`"
 
 ### 为什么自主询问而不是自动写
 
@@ -1137,7 +1137,7 @@ checkpointFileNumber = <最新 chk 编号>
 plotFileNumber       = <最新 plt 编号 + 1>
 ```
 
-已修正 skill 库全部 11 处错误写法，并建 `agent/pitfalls/restart-plotfilenumber-overwrite.md`。
+已修正 skill 库全部 11 处错误写法，并建 `skills/flash-pitfall-finder/knowledge/pitfalls/restart-plotfilenumber-overwrite.md`。
 
 ### 推广
 
@@ -1168,7 +1168,7 @@ MPI-IO 崩溃（L-020 案）的触发条件。
 - 经验法则：**`plotFileIntervalTime ≥ 5×dt`，全算例 plt 总量 100~500 个**
 - 或按步控制：`plotFileIntervalStep = 50`
 - 已落地：Sunliang_Xray 源模板 + objdir parfile 均改 0.1e-09
-  （见 `agent/pitfalls/plotfile-interval-too-dense.md`）
+  （见 `skills/flash-pitfall-finder/knowledge/pitfalls/plotfile-interval-too-dense.md`）
 
 ---
 

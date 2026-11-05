@@ -9,7 +9,7 @@
 
 - **决策**：D-003（2026-06-17）— 工具辅助 + 人工精读，按需推进，不一次性全转
 - **理由**：手册 661 页，一次性转质量难控、周期长（2-3 月）；按章节转跟着实际问题驱动
-- **目标产物**：`agent/manual/<章节路径>/<章节名>.md`，按 `agent/TEMPLATES/knowledge-entry.md` 模板
+- **目标产物**：`skills/flash-manual-search/knowledge/manual/<章节路径>/<章节名>.md`，按 `agent/TEMPLATES/knowledge-entry.md` 模板（`-raw.txt` 中间产物留在 `agent/manual/` 工作台）
 
 ---
 
@@ -140,9 +140,9 @@ mv agent/manual/18-local-source-terms/18.4-energy-deposition.md \
 #    - 没有把推测写成事实
 #    - 没有重复其他 knowledge 内容
 
-# 3. 通过 → 移到正式目录
+# 3. 通过 → 移到正式目录（flash-manual-search 的 knowledge，随包分发）
 mv agent/drafts/pending/18.4-energy-deposition.md \
-   agent/manual/18-local-source-terms/
+   skills/flash-manual-search/knowledge/manual/18-local-source-terms/
 
 # 4. 改 status: draft → beta
 # 5. 在 agent/PROJECT_PLAN.md §9 changelog 加一行
@@ -157,22 +157,23 @@ rm agent/manual/18-local-source-terms/18.4-energy-deposition-raw.txt
 按 PDF 实际章节号命名，便于交叉引用：
 
 ```
-agent/manual/
-├── flash4_ug_4p8.pdf                      # 原 PDF
-├── README.md                              # 本目录索引（待建）
-├── 01-introduction/                       # §1
-│   ├── 1.1-whats-new.md
-│   └── 1.4-about-ug.md
-├── 02-setup-and-build/                    # §2
+skills/flash-manual-search/knowledge/manual/   # ★ 转换产物（入 git，随包分发）
+├── 01-intro/                                # §1
+│   ├── 1.1-*.md
+│   └── 1.4-*.md
+├── 02-quick-start/                          # §2
 │   └── ...
-├── 18-local-source-terms/                 # §18
+├── 18-local-source-terms/                   # §18
 │   ├── 18.1-burn-unit.md
 │   ├── 18.2-ionization-unit.md
 │   ├── 18.3-stir-unit.md
-│   └── 18.4-energy-deposition.md          # ★ 激光（优先转）
-├── 19-material-properties/                # §19
-│   └── ...
-└── ...                                    # 共 ~40 章
+│   └── 18.4-energy-deposition.md            # ★ 激光（优先转）
+└── ...                                      # 共 ~40 章
+
+agent/manual/                                # ★ 转换工作台（PDF 源 + raw.txt）
+├── flash4_ug_4p8.pdf                        # 原 PDF
+├── README.md                                # 工作台索引
+└── <chapter>/<section>-raw.txt              # pdftotext 提取（不入 git）
 ```
 
 **规则**：
@@ -261,7 +262,7 @@ cat agent/drafts/pending/18.4-energy-deposition-20260712.md
 
 # 通过 → 移回正式目录
 mv agent/drafts/pending/18.4-energy-deposition-20260712.md \
-   agent/manual/18-local-source-terms/18.4-energy-deposition.md
+   skills/flash-manual-search/knowledge/manual/18-local-source-terms/18.4-energy-deposition.md
 
 # 在 PROJECT_PLAN §9 加 changelog
 ```
@@ -327,7 +328,7 @@ call EnergyDeposition(blockCount, blockList, dt, dr_simTime, pass)
 
 手册 §18.4 可能引用 §16（Hydro）等。在 md 里改为本仓库内链接：
 ```markdown
-详见 [[../16-hydro/16.1-overview.md]] 或 .claude/skills/flash-hydro/knowledge/overview.md（Phase 2 后）
+详见 [[../16-hydro/16.1-overview.md]] 或 skills/flash-hydro/knowledge/overview.md
 ```
 
 未转的章节标 `(待转)`。
@@ -348,10 +349,10 @@ call EnergyDeposition(blockCount, blockList, dt, dr_simTime, pass)
 
 ## 8. 与其他工作流的关系
 
-- **flash-manual-search skill**：转换后的 md 被该 skill 检索
-- **agent/param-index.md**：转换时发现的新参数补到这里
-- **各 skill 的 knowledge/**：手册内容**不直接**进 skill knowledge（避免重复），而是通过 `[[knowledge/overview#section]]` 链接引用
-- **agent/pitfalls/**：转换时发现的本机特定问题补到这里
+- **flash-manual-search skill**：转换后的 md 就是该 skill 的 knowledge（`skills/flash-manual-search/knowledge/manual/`）
+- **skills/flash-param-query/knowledge/param-index.md**：转换时发现的新参数补到这里
+- **各 skill 的 knowledge/**：手册内容不散进各物理 skill（避免重复），需要时通过 `[[knowledge/overview#section]]` 链接引用
+- **skills/flash-pitfall-finder/knowledge/pitfalls/**：转换时发现的本机特定问题补到这里
 
 ---
 
@@ -360,3 +361,4 @@ call EnergyDeposition(blockCount, blockList, dt, dr_simTime, pass)
 | 日期 | 改动 | 改动人 |
 |---|---|---|
 | 2026-07-12 | 初始创建（4 步流程 + 命名约定 + 优先级 + 激光章 worked example） | claude |
+| 2026-11-05 | v1.2 收编：转换产物目标路径改为 skills/flash-manual-search/knowledge/manual/；agent/manual/ 降级为工作台（PDF + raw.txt）；param-index / pitfalls 同步指向新位置 | claude |

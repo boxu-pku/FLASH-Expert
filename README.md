@@ -41,7 +41,7 @@ FLASH-Expert 是一套**文件化的 AI 知识库系统**，由 18 个专门 ski
 | `flash-source-reader` | 源码定位 + 中文解释（不只是 grep） |
 | `flash-pitfall-finder` | 错误信息 → 踩坑匹配 + 修复步骤 |
 | `flash-param-query` | 参数字典（跨单元查定义/默认值/单位） |
-| `flash-manual-search` | 官方手册检索（32 篇已转写） |
+| `flash-manual-search` | 官方手册检索（31 篇已转写） |
 | `flash-setup-builder` | setup 命令生成器 |
 
 ### 操作层（2 个）— 端到端操作
@@ -51,13 +51,14 @@ FLASH-Expert 是一套**文件化的 AI 知识库系统**，由 18 个专门 ski
 | `flash-case-runner` | setup → make → run → 诊断 |
 | `flash-result-analyzer` | 结果分析（能量守恒 / 激光吸收率 / yt 可视化） |
 
-### 配套基础设施（`agent/` 目录）
+### 配套知识资产（已收编进对应 skill，随包分发）
 
 | 内容 | 说明 |
 |---|---|
-| 17 条经验沉淀（L-001~L-017） | 项目建设过程中的设计经验，指导 skill 回答风格 |
-| 10 条报错库（`agent/pitfalls/`） | 实战踩坑：libmpi 冲突 / EOS 不收敛 / species 命名 / X 射线诊断配置等 |
-| 32 篇手册转写（`agent/drafts/pending/`） | FLASH 4.8 用户手册全本转写（661 页 → markdown） |
+| 20 条经验沉淀（L-001~L-020，`agent/LESSONS_LEARNED.md`） | 项目建设过程中的设计经验，指导 skill 回答风格 |
+| 19 条报错库（`skills/flash-pitfall-finder/knowledge/pitfalls/`） | 实战踩坑：libmpi 冲突 / EOS 不收敛 / species 命名 / X 射线诊断配置等 |
+| 31 篇手册转写（`skills/flash-manual-search/knowledge/manual/`） | FLASH 4.8 用户手册全本转写（661 页 → markdown） |
+| 参数索引（`skills/flash-param-query/knowledge/param-index.md`） | 150+ 核心参数按 12 单元分类 |
 | 工具脚本 | `promote_draft.sh`（草稿审核）/ `flash_env.sh`（运行环境配置） |
 
 ---
@@ -145,7 +146,7 @@ claude        # 或 zcode / dsh 等
   → flash-case-runner（自动 setup → make → run）
 
 > LaserSlab 编译报 libmpi 冲突怎么办？
-  → flash-pitfall-finder（匹配 agent/pitfalls/libmpi-conflict.md）
+  → flash-pitfall-finder（匹配 skills/flash-pitfall-finder/knowledge/pitfalls/libmpi-conflict.md）
 
 > 从 checkpoint 续跑
   → flash-case-runner（restart 流程）
@@ -249,11 +250,11 @@ skills/                        ← 真身（install.sh 的安装源）
 | 指标 | 值 |
 |---|---|
 | 总 skill 数 | 18 |
-| 总文件数 | 264 |
-| 总行数 | ~62,000 |
-| 经验沉淀 | 17 条（L-001~L-017） |
-| 报错库 | 10 条跨领域踩坑 |
-| 手册转写 | 32 篇（覆盖 661 页） |
+| 总文件数 | 207（skills/ 目录）
+| 总行数 | ~48,000（skills/ 目录 md）
+| 经验沉淀 | 20 条（L-001~L-020）
+| 报错库 | 19 条跨领域踩坑（随 flash-pitfall-finder 分发）|
+| 手册转写 | 31 篇（覆盖 661 页，随 flash-manual-search 分发）|
 | 实战验证 | 4 个算例（LaserSlab 4.6.2/4.8 + Sunliang_laser_CH + Sunliang_Xray） |
 | 验收考题 | 75 道全部通过 |
 

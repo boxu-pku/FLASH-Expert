@@ -1,5 +1,7 @@
 # FLASH 4.8 用户手册转写 — 外包说明书（Handoff Specification）
 
+> ⚠️ **历史文档（2026-07 外包已完成）**：转写产物现位于 `skills/flash-manual-search/knowledge/manual/`，`agent/manual/` 已降级为转换工作台（PDF + raw.txt）。本文中的产物路径以 `agent/workflows/pdf-to-md.md` 现行版为准。
+
 > **本文件**：交给 opencode AI 独立执行的工作说明书（SOW）。
 > **对方角色**：opencode AI 按本说明书完成全手册转写。
 > **我方角色**：在另一对话框检查 progress report、验收、反馈。
