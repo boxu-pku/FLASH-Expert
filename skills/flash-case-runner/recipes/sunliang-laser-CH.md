@@ -10,6 +10,8 @@ based_on: LaserSlab（派生）
 ---
 
 # Sunliang_laser_CH 算例配方
+> 路径约定：`$FLASH_ROOT` = FLASH 4.8 仓库根目录（本机 `/home/ubuntu/local/flash/FLASH4.8/FLASH/FLASH4.8`）；`$FLASH_LIBS` = 外部库根目录（本机 `/home/ubuntu/local/flash/myFLASH4.8`）。其它机器按实际路径替换。
+
 
 > Sunliang_laser_CH 是用户**自定义算例**——基于 LaserSlab 派生，扩展为多物质 CH/CHBr 多层靶。
 >
@@ -52,7 +54,7 @@ based_on: LaserSlab（派生）
 ### 步骤 1: setup
 
 ```bash
-cd /home/ubuntu/local/flash/FLASH4.8/FLASH/FLASH4.8
+cd $FLASH_ROOT
 
 ./setup Sunliang_laser_CH -2d -auto +pm4dev \
   -geometry=cylindrical -nxb=16 -nyb=16 \
@@ -99,7 +101,7 @@ ls -lh flash4
 > **硬约束**：在 `cases/Sunliang_laser_CH/01-data/` 里启动——输出全落 01-data，objdir 根目录只留编译产物。
 
 ```bash
-cd /home/ubuntu/local/flash/FLASH4.8/FLASH/FLASH4.8
+cd $FLASH_ROOT
 source flash_env.sh
 
 cd cases/Sunliang_laser_CH
@@ -221,7 +223,7 @@ Sunliang 算例没有专门的一键脚本（参考 `examples/run-laser-slab.sh`
 ```bash
 #!/bin/bash
 # 自定义 run-sunliang.sh（参考 run-laser-slab.sh）
-cd /home/ubuntu/local/flash/FLASH4.8/FLASH/FLASH4.8
+cd $FLASH_ROOT
 source flash_env.sh
 cd cases/Sunliang_laser_CH
 mkdir -p 01-data && cd 01-data   # 硬约束：在 01-data/ 里跑

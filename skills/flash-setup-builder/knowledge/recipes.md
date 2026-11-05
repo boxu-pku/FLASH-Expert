@@ -9,6 +9,8 @@ source_anchors:
 ---
 
 # setup 命令配方
+> 路径约定：`$FLASH_ROOT` = FLASH 4.8 仓库根目录（本机 `/home/ubuntu/local/flash/FLASH4.8/FLASH/FLASH4.8`）；`$FLASH_LIBS` = 外部库根目录（本机 `/home/ubuntu/local/flash/myFLASH4.8`）。其它机器按实际路径替换。
+
 
 > 按 L-004 教学顺序组织：**最小可运行 → 典型 HEDP → 多物质 → 进阶/特殊**。
 > 每个配方给：完整命令 + 每选项为什么用 + 变体建议 + 预检查。
@@ -57,11 +59,11 @@ source_anchors:
 
 ```bash
 # 1. 确认源码在
-ls /home/ubuntu/local/flash/FLASH4.8/FLASH/FLASH4.8/source/Simulation/SimulationMain/Sedov/
+ls $FLASH_ROOT/source/Simulation/SimulationMain/Sedov/
 
 # 2. 确认 sites/ares/ 存在（或 cases/Sedov/Makefile.h 已存在）
-ls /home/ubuntu/local/flash/FLASH4.8/FLASH/FLASH4.8/sites/ 2>/dev/null
-ls /home/ubuntu/local/flash/FLASH4.8/FLASH/FLASH4.8/cases/Sedov/Makefile.h
+ls $FLASH_ROOT/sites/ 2>/dev/null
+ls $FLASH_ROOT/cases/Sedov/Makefile.h
 ```
 
 ### 变体建议
@@ -132,16 +134,16 @@ make -j4
 # 1. 确认 HEDP 三件套（MPI / HDF5 / HYPRE）路径在 Makefile.h
 grep -E "MPI_PATH|HDF5_PATH|HYPRE_PATH" cases/LaserSlab/Makefile.h
 # 应输出（本机典型）:
-# MPI_PATH = /home/ubuntu/local/flash/myFLASH4.8/mpich
-# HDF5_PATH = /home/ubuntu/local/flash/myFLASH4.8/hdf5
-# HYPRE_PATH = /home/ubuntu/local/flash/myFLASH4.8/hypre
+# MPI_PATH = $FLASH_LIBS/mpich
+# HDF5_PATH = $FLASH_LIBS/hdf5
+# HYPRE_PATH = $FLASH_LIBS/hypre
 
 # 2. 确认 parfile 在 source 下
-ls /home/ubuntu/local/flash/FLASH4.8/FLASH/FLASH4.8/source/Simulation/SimulationMain/LaserSlab/example.par
+ls $FLASH_ROOT/source/Simulation/SimulationMain/LaserSlab/example.par
 
 # 3. 确认 datafile 在（EOS 表 / Opacity 表）
-ls /home/ubuntu/local/flash/FLASH4.8/FLASH/FLASH4.8/source/Simulation/SimulationMain/LaserSlab/*.cn4
-ls /home/ubuntu/local/flash/FLASH4.8/FLASH/FLASH4.8/source/Simulation/SimulationMain/LaserSlab/*.imx
+ls $FLASH_ROOT/source/Simulation/SimulationMain/LaserSlab/*.cn4
+ls $FLASH_ROOT/source/Simulation/SimulationMain/LaserSlab/*.imx
 ```
 
 ### 已知坑（必看）
@@ -418,7 +420,7 @@ MHD=True
 #### Step 1: 拷贝模板
 
 ```bash
-cd /home/ubuntu/local/flash/FLASH4.8/FLASH/FLASH4.8
+cd $FLASH_ROOT
 cp -r source/Simulation/SimulationMain/LaserSlab source/Simulation/SimulationMain/MyLaser
 ```
 

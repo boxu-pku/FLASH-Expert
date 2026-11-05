@@ -30,6 +30,8 @@ tags:
 ---
 
 # 算例设置、FLASH 架构与 setup 配置脚本（§3-5）
+> 路径约定：`$FLASH_ROOT` = FLASH 4.8 仓库根目录（本机 `/home/ubuntu/local/flash/FLASH4.8/FLASH/FLASH4.8`）；`$FLASH_LIBS` = 外部库根目录（本机 `/home/ubuntu/local/flash/myFLASH4.8`）。其它机器按实际路径替换。
+
 
 > **TL;DR**：§3-5 构成 FLASH 的自定义算例开发三部曲：§3 教用户创建新算例（Config + Simulation_init*.F90 文件），§4 解释 FLASH 单元架构（继承、API、stub、subunit），§5 是 setup 脚本完整参考（命令行参数、Config 文件语法、Makefile.h 创建、生成文件清单）。
 
@@ -218,9 +220,9 @@ setup 通过 `sites/<hostname>/Makefile.h` 获取本机编译器和库路径：
 
 ```makefile
 # 本机配置示例（cases/Sedov/Makefile.h:1-50）
-MPI_PATH   = /home/ubuntu/local/flash/myFLASH4.8/mpich
-HDF5_PATH  = /home/ubuntu/local/flash/myFLASH4.8/hdf5
-HYPRE_PATH = /home/ubuntu/local/flash/myFLASH4.8/hypre
+MPI_PATH   = $FLASH_LIBS/mpich
+HDF5_PATH  = $FLASH_LIBS/hdf5
+HYPRE_PATH = $FLASH_LIBS/hypre
 FCOMP   = ${MPI_PATH}/bin/mpif90
 CCOMP   = ${MPI_PATH}/bin/mpicc
 OPENMP = -fopenmp

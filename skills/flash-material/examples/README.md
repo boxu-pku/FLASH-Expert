@@ -1,4 +1,6 @@
 # examples/ — flash-material skill 示例文件
+> 路径约定：`$FLASH_ROOT` = FLASH 4.8 仓库根目录（本机 `/home/ubuntu/local/flash/FLASH4.8/FLASH/FLASH4.8`）；`$FLASH_LIBS` = 外部库根目录（本机 `/home/ubuntu/local/flash/myFLASH4.8`）。其它机器按实际路径替换。
+
 
 > 本目录提供 flash-material skill 的可执行示例。
 
@@ -16,7 +18,7 @@
 
 ```bash
 # Step 1: setup（生成 objdir 和 Makefile）
-cd /home/ubuntu/local/flash/FLASH4.8/FLASH/FLASH4.8
+cd $FLASH_ROOT
 bash skills/flash-material/examples/setup-spitzerhighz-ionmix4.sh
 
 # Step 2: 编译

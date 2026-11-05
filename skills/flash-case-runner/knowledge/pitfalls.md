@@ -12,7 +12,7 @@ source_anchors:
 ---
 
 # 全阶段踩坑汇总
-> 路径约定：`$FLASH_ROOT` = FLASH 4.8 仓库根目录（本机 `/home/ubuntu/local/flash/FLASH4.8/FLASH/FLASH4.8`）；`$FLASH_LIBS` = 外部库根目录（本机 `/home/ubuntu/local/flash/myFLASH4.8`，含 mpich/hdf5/hypre）。其它机器按实际路径替换。
+> 路径约定：`$FLASH_ROOT` = FLASH 4.8 仓库根目录（本机 `$FLASH_ROOT`）；`$FLASH_LIBS` = 外部库根目录（本机 `$FLASH_LIBS`，含 mpich/hdf5/hypre）。其它机器按实际路径替换。
 
 
 > 本文是 flash-case-runner skill 的**踩坑速查**——覆盖 setup / make / run / restart 四阶段常见错误。

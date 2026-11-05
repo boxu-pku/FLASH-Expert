@@ -398,6 +398,7 @@
 | 2026-07-30 | flash-material + flash-io + flash-diffuse 并行 beta（3 个子代理同时建设） | 3 个 general-purpose 子代理并行执行，各独立探索源码 + 写全套文件；flash-material 3295 行（Conductivity/SpitzerHighZ + Opacity/IONMIX4 + 173 triggers）；flash-io 3621 行（HDF5 parallel IO + plotfile/checkpoint + 150+ triggers）；flash-diffuse 3318 行（隐式扩散 HYPRE + 30 个术语速查 + 150+ triggers）；总计 10234 行；全部按 L-001~L-014 经验；知识层完成度 7/11 stable + 3/11 beta = 10/11 |
 | 2026-07-31 | flash-material + flash-io + flash-diffuse 升级 beta → stable | 3 个 skill 批量验收通过（每个抽 1 道核心题详细展开 + 4 道确认）；知识层完成度 10/11 stable（91%）；只差 flash-multispecies Phase 2 完成 |
 | 2026-08-02 | flash-multispecies 升级 stable + L-015 沉淀 + Phase 2 完成 | 5 道验收考题通过；Q2 反馈先讲完整故事线（定义→传递→处理→使用）再讲细节→ 沉淀 L-015（回答X
+| 2026-11-05 | **v1.2 多 harness 发行包改造**（4 提交：babac75 / cb55c9a / 7791d97 / 本日） | ① skill 真身 `.claude/skills/` → 仓库根 `skills/`，`.claude/.zcode/.agents` 三个挂载链接 + `install.sh`（symlink/--copy、user/project 级、claude/zcode/agents/dsh）→ DSH/Codex 等可装；② 资产收编自包含：param-index→flash-param-query、19 条 pitfalls→flash-pitfall-finder、31 篇手册章节→flash-manual-search（`agent/manual/` 降级为转换工作台，PDF/raw 不进包）；③ 文本中立化 ~270 处（跨 skill 引用统一 skills/<owner>/ 记法、case-runner 等 33 文件绝对路径→$FLASH_ROOT/$FLASH_LIBS 变量+本机对照说明、.claude 硬编码清零）；④ `lint.sh` 可移植性门禁 7 项（0 error 常态）；ARCHITECTURE §8 增多 harness 挂载原则；CLAUDE.md 增 agent/ 工作区外部降级说明 |
 
 <!--
 更新格式（每次改完都加一行）：

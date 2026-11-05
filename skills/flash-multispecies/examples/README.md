@@ -1,4 +1,6 @@
 # flash-multispecies examples
+> 路径约定：`$FLASH_ROOT` = FLASH 4.8 仓库根目录（本机 `/home/ubuntu/local/flash/FLASH4.8/FLASH/FLASH4.8`）；`$FLASH_LIBS` = 外部库根目录（本机 `/home/ubuntu/local/flash/myFLASH4.8`）。其它机器按实际路径替换。
+
 
 FLASH 4.8 Multispecies 多物质追踪的典型配置示例。
 
@@ -14,7 +16,7 @@ FLASH 4.8 Multispecies 多物质追踪的典型配置示例。
 ### 1. 选择算例并 setup
 
 ```bash
-cd /home/ubuntu/local/flash/FLASH4.8/FLASH/FLASH4.8
+cd $FLASH_ROOT
 
 # 双物质（HEDP 标准，LaserSlab cham+targ）
 bash skills/flash-multispecies/examples/setup-species-basics.sh laserslab

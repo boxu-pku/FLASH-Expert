@@ -1,4 +1,6 @@
 # examples/ — flash-diffuse 配置示例
+> 路径约定：`$FLASH_ROOT` = FLASH 4.8 仓库根目录（本机 `/home/ubuntu/local/flash/FLASH4.8/FLASH/FLASH4.8`）；`$FLASH_LIBS` = 外部库根目录（本机 `/home/ubuntu/local/flash/myFLASH4.8`）。其它机器按实际路径替换。
+
 
 > 3 个文件，按 L-013 聚焦主流路径（Unsplit + HYPRE，HEDP 标准）。
 
@@ -15,7 +17,7 @@
 直接复制到 case 目录运行：
 
 ```bash
-cd /home/ubuntu/local/flash/FLASH4.8/FLASH/FLASH4.8
+cd $FLASH_ROOT
 # 改 setup-diffuse-unsplit.sh 里的 problem 名后
 bash skills/flash-diffuse/examples/setup-diffuse-unsplit.sh
 ```

@@ -11,6 +11,8 @@ source_anchors:
 ---
 
 # flash-setup-builder overview
+> 路径约定：`$FLASH_ROOT` = FLASH 4.8 仓库根目录（本机 `/home/ubuntu/local/flash/FLASH4.8/FLASH/FLASH4.8`）；`$FLASH_LIBS` = 外部库根目录（本机 `/home/ubuntu/local/flash/myFLASH4.8`）。其它机器按实际路径替换。
+
 
 > 本文是 setup 命令构造工具的**总览文档**。讲清楚 setup 命令的"完整故事线"+ 语法 + 术语，
 > 让你接到用户需求时能拼出可运行的 `./setup` 命令。
@@ -141,10 +143,10 @@ source_anchors:
 
 ```bash
 # 列所有算例
-ls /home/ubuntu/local/flash/FLASH4.8/FLASH/FLASH4.8/source/Simulation/SimulationMain/
+ls $FLASH_ROOT/source/Simulation/SimulationMain/
 
 # 看某算例 Config 顶部注释（通常说明用途）
-head -30 /home/ubuntu/local/flash/FLASH4.8/FLASH/FLASH4.8/source/Simulation/SimulationMain/<算例>/Config
+head -30 $FLASH_ROOT/source/Simulation/SimulationMain/<算例>/Config
 ```
 
 ## 4. setup 命令完整语法（按 L-011 讲为什么这么设计）

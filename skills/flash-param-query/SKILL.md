@@ -349,7 +349,7 @@ rg -n "<NAME>_VAR" bin/Flash.h.tpl
 
 - [ ] 跑 5 道验收考题，全部通过则升级 stable
 - [ ] 持续扩充 `skills/flash-param-query/knowledge/param-index.md`（每次遇到新参数补一条）
-- [ ] 写 `skills/flash-param-query/tools/build_param_index.py` 自动扫描脚本（生成完整索引，含 2884+ 条）
+- [ ] 写 本 skill 的 `tools/build_param_index.py` 自动扫描脚本（生成完整索引，含 2884+ 条）
 - [ ] 跨 skill 协作验证（如 flash-laser 调用本 skill 查参数）
 
 ## 8. 维护日志

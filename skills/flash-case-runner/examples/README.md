@@ -1,4 +1,6 @@
 # flash-case-runner examples/
+> 路径约定：`$FLASH_ROOT` = FLASH 4.8 仓库根目录（本机 `/home/ubuntu/local/flash/FLASH4.8/FLASH/FLASH4.8`）；`$FLASH_LIBS` = 外部库根目录（本机 `/home/ubuntu/local/flash/myFLASH4.8`）。其它机器按实际路径替换。
+
 
 > 一键运行脚本和日志分析工具。本 skill 的 examples/ 是**可直接执行的 bash 脚本**（不是 parfile，因为是操作层 skill）。
 
@@ -16,10 +18,10 @@
 
 ```bash
 # 跑 Sedov（默认 2 核）
-bash /home/ubuntu/local/flash/FLASH4.8/FLASH/FLASH4.8/skills/flash-case-runner/examples/run-sedov.sh
+bash $FLASH_ROOT/skills/flash-case-runner/examples/run-sedov.sh
 
 # 跑 4 核
-bash /home/ubuntu/local/flash/FLASH4.8/FLASH/FLASH4.8/skills/flash-case-runner/examples/run-sedov.sh 4
+bash $FLASH_ROOT/skills/flash-case-runner/examples/run-sedov.sh 4
 ```
 
 **做什么**：
@@ -34,10 +36,10 @@ bash /home/ubuntu/local/flash/FLASH4.8/FLASH/FLASH4.8/skills/flash-case-runner/e
 
 ```bash
 # 前台跑（默认 2 核）
-bash /home/ubuntu/local/flash/FLASH4.8/FLASH/FLASH4.8/skills/flash-case-runner/examples/run-laser-slab.sh
+bash $FLASH_ROOT/skills/flash-case-runner/examples/run-laser-slab.sh
 
 # 4 核后台跑（长算例推荐）
-bash /home/ubuntu/local/flash/FLASH4.8/FLASH/FLASH4.8/skills/flash-case-runner/examples/run-laser-slab.sh 4 background
+bash $FLASH_ROOT/skills/flash-case-runner/examples/run-laser-slab.sh 4 background
 ```
 
 **做什么**：
@@ -54,7 +56,7 @@ bash /home/ubuntu/local/flash/FLASH4.8/FLASH/FLASH4.8/skills/flash-case-runner/e
 
 ```bash
 # 分析日志（在 01-data/ 里）
-bash /home/ubuntu/local/flash/FLASH4.8/FLASH/FLASH4.8/skills/flash-case-runner/examples/flash_log_parser.sh cases/LaserSlab/01-data/flash.log
+bash $FLASH_ROOT/skills/flash-case-runner/examples/flash_log_parser.sh cases/LaserSlab/01-data/flash.log
 ```
 
 **提取什么**：
@@ -106,4 +108,4 @@ bash /home/ubuntu/local/flash/FLASH4.8/FLASH/FLASH4.8/skills/flash-case-runner/e
 - 详细操作流程：`../knowledge/overview.md` + `../knowledge/setup_guide.md` + `../knowledge/make_guide.md` + `../knowledge/run_guide.md`
 - 算例配方：`../recipes/sedov.md` + `../recipes/laser-slab-2d.md` + `../recipes/sunliang-laser-CH.md`
 - 踩坑速查：`../knowledge/pitfalls.md`
-- 项目根 flash_env.sh：`/home/ubuntu/local/flash/FLASH4.8/FLASH/FLASH4.8/flash_env.sh`
+- 项目根 flash_env.sh：`$FLASH_ROOT/flash_env.sh`

@@ -1,4 +1,6 @@
 # flash-setup-builder examples
+> 路径约定：`$FLASH_ROOT` = FLASH 4.8 仓库根目录（本机 `/home/ubuntu/local/flash/FLASH4.8/FLASH/FLASH4.8`）；`$FLASH_LIBS` = 外部库根目录（本机 `/home/ubuntu/local/flash/myFLASH4.8`）。其它机器按实际路径替换。
+
 
 本目录是 setup 命令的可直接复制模板。
 
@@ -14,13 +16,13 @@
 
 ```bash
 # 1. 复制需要的模板到工作目录
-cp /home/ubuntu/local/flash/FLASH4.8/FLASH/FLASH4.8/skills/flash-setup-builder/examples/<file>.sh /tmp/
+cp $FLASH_ROOT/skills/flash-setup-builder/examples/<file>.sh /tmp/
 
 # 2. 按需修改（改算例名、objdir、parfile 等）
 vi /tmp/<file>.sh
 
 # 3. 执行（在 FLASH 根目录）
-cd /home/ubuntu/local/flash/FLASH4.8/FLASH/FLASH4.8
+cd $FLASH_ROOT
 bash /tmp/<file>.sh
 ```
 

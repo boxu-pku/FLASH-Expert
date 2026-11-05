@@ -167,7 +167,7 @@ owner: user
 ---
 
 # flash-case-runner — FLASH 算例操作专家（setup → make → run → restart）
-> 路径约定：`$FLASH_ROOT` = FLASH 4.8 仓库根目录（本机 `/home/ubuntu/local/flash/FLASH4.8/FLASH/FLASH4.8`）；`$FLASH_LIBS` = 外部库根目录（本机 `/home/ubuntu/local/flash/myFLASH4.8`，含 mpich/hdf5/hypre）。其它机器按实际路径替换。
+> 路径约定：`$FLASH_ROOT` = FLASH 4.8 仓库根目录（本机 `$FLASH_ROOT`）；`$FLASH_LIBS` = 外部库根目录（本机 `$FLASH_LIBS`，含 mpich/hdf5/hypre）。其它机器按实际路径替换。
 
 
 > **状态**：beta（Phase 3 第一个操作层 skill；2026-08-02 LaserSlab 实战验证通过 libmpi 冲突解决方案）

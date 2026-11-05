@@ -11,7 +11,7 @@ source_anchors:
 ---
 
 # FLASH 算例生命周期总览
-> 路径约定：`$FLASH_ROOT` = FLASH 4.8 仓库根目录（本机 `/home/ubuntu/local/flash/FLASH4.8/FLASH/FLASH4.8`）；`$FLASH_LIBS` = 外部库根目录（本机 `/home/ubuntu/local/flash/myFLASH4.8`，含 mpich/hdf5/hypre）。其它机器按实际路径替换。
+> 路径约定：`$FLASH_ROOT` = FLASH 4.8 仓库根目录（本机 `$FLASH_ROOT`）；`$FLASH_LIBS` = 外部库根目录（本机 `$FLASH_LIBS`，含 mpich/hdf5/hypre）。其它机器按实际路径替换。
 
 
 > 本文是 flash-case-runner skill 的**入口文档**。用户问"怎么跑 X" / "FLASH 算例怎么开始"时，先读这里建立心智模型（L-015 先讲完整故事线）。

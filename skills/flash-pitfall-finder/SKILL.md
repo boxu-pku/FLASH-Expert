@@ -423,7 +423,7 @@ rg -n 'Driver_abortFlash\s*\(' source/ | head -100
 - [ ] 跑 5 道验收考题，全部通过则升级 stable
 - [ ] 持续累积：每次遇到新 abort 都生成草稿到 `agent/drafts/pending/`
 - [ ] 写 `agent/TEMPLATES/pitfall.md` 模板（统一踩坑条目格式）
-- [ ] 长期：建 `skills/flash-pitfall-finder/tools/build_pitfall_index.py` 索引脚本
+- [ ] 长期：建 本 skill 的 `tools/build_pitfall_index.py` 索引脚本
 
 ## 8. 维护日志
 

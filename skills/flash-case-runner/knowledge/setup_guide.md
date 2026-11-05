@@ -14,7 +14,7 @@ source_anchors:
 ---
 
 # setup 阶段完整指南
-> 路径约定：`$FLASH_ROOT` = FLASH 4.8 仓库根目录（本机 `/home/ubuntu/local/flash/FLASH4.8/FLASH/FLASH4.8`）；`$FLASH_LIBS` = 外部库根目录（本机 `/home/ubuntu/local/flash/myFLASH4.8`，含 mpich/hdf5/hypre）。其它机器按实际路径替换。
+> 路径约定：`$FLASH_ROOT` = FLASH 4.8 仓库根目录（本机 `$FLASH_ROOT`）；`$FLASH_LIBS` = 外部库根目录（本机 `$FLASH_LIBS`，含 mpich/hdf5/hypre）。其它机器按实际路径替换。
 
 
 > 本文讲 FLASH 算例生命周期的**第一阶段**：setup。

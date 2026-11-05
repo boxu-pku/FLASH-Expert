@@ -8,6 +8,8 @@ source_anchors:
 ---
 
 # setup 常见错误与诊断引导
+> 路径约定：`$FLASH_ROOT` = FLASH 4.8 仓库根目录（本机 `/home/ubuntu/local/flash/FLASH4.8/FLASH/FLASH4.8`）；`$FLASH_LIBS` = 外部库根目录（本机 `/home/ubuntu/local/flash/myFLASH4.8`）。其它机器按实际路径替换。
+
 
 > 按 L-012 两层结构组织：每个错误先**引导贴现场**，再展开**通用原因**。
 > 按 L-013 聚焦高频错误（HEDP 主流路径遇到的）详讲，边缘错误简列。
@@ -50,7 +52,7 @@ SetupError: Ambiguous unit 'X' matches: [X1, X2, X3]
 grep -A 50 "Defined Setup Variables" /tmp/setup_err.log
 
 # 3. 你想引用的 unit 在不在 source 下
-find /home/ubuntu/local/flash/FLASH4.8/FLASH/FLASH4.8/source/ -name "Config" | xargs grep -l "<unit名>"
+find $FLASH_ROOT/source/ -name "Config" | xargs grep -l "<unit名>"
 ```
 
 ### 通用原因（按概率排序）
@@ -62,7 +64,7 @@ setup 区分大小写。例：`+Laser` 不行（shortcut 名小写），必须 `
 **验证**：
 ```bash
 # 确认 shortcut 名在 setup_shortcuts.txt
-grep "^laser:" /home/ubuntu/local/flash/FLASH4.8/FLASH/FLASH4.8/bin/setup_shortcuts.txt
+grep "^laser:" $FLASH_ROOT/bin/setup_shortcuts.txt
 ```
 
 #### 原因 2：setup-variable 没开
@@ -81,7 +83,7 @@ grep -i "laser\|energydeposition" cases/<case>/setup_flags
 
 **验证**：
 ```bash
-ls /home/ubuntu/local/flash/FLASH4.8/FLASH/FLASH4.8/source/Simulation/SimulationMain/<算例>/Config
+ls $FLASH_ROOT/source/Simulation/SimulationMain/<算例>/Config
 ```
 
 #### 原因 4：前缀匹配歧义（Ambiguous）
@@ -111,10 +113,10 @@ SetupError: Site '<hostname>' not found in sites/ directory
 echo "Hostname: $(hostname)"
 
 # 2. sites/ 目录有什么
-ls /home/ubuntu/local/flash/FLASH4.8/FLASH/FLASH4.8/sites/ 2>/dev/null || echo "sites/ 不存在"
+ls $FLASH_ROOT/sites/ 2>/dev/null || echo "sites/ 不存在"
 
 # 3. 算例 Config 期望什么 site
-grep -i "site\|hostname" /home/ubuntu/local/flash/FLASH4.8/FLASH/FLASH4.8/source/Simulation/SimulationMain/<算例>/Config
+grep -i "site\|hostname" $FLASH_ROOT/source/Simulation/SimulationMain/<算例>/Config
 ```
 
 ### 通用原因
@@ -126,9 +128,9 @@ grep -i "site\|hostname" /home/ubuntu/local/flash/FLASH4.8/FLASH/FLASH4.8/source
 #### 方案 A：创建 `sites/ares/`（一劳永逸）
 
 ```bash
-mkdir -p /home/ubuntu/local/flash/FLASH4.8/FLASH/FLASH4.8/sites/ares
-cp /home/ubuntu/local/flash/FLASH4.8/FLASH/FLASH4.8/cases/LaserSlab/Makefile.h \
-   /home/ubuntu/local/flash/FLASH4.8/FLASH/FLASH4.8/sites/ares/Makefile.h
+mkdir -p $FLASH_ROOT/sites/ares
+cp $FLASH_ROOT/cases/LaserSlab/Makefile.h \
+   $FLASH_ROOT/sites/ares/Makefile.h
 ```
 
 以后所有 setup 自动用这个 site。
@@ -137,8 +139,8 @@ cp /home/ubuntu/local/flash/FLASH4.8/FLASH/FLASH4.8/cases/LaserSlab/Makefile.h \
 
 ```bash
 ./setup <NewCase> -auto -objdir=cases/<NewCase>  # 可能失败
-cp /home/ubuntu/local/flash/FLASH4.8/FLASH/FLASH4.8/cases/LaserSlab/Makefile.h \
-   /home/ubuntu/local/flash/FLASH4.8/FLASH/FLASH4.8/cases/<NewCase>/Makefile.h
+cp $FLASH_ROOT/cases/LaserSlab/Makefile.h \
+   $FLASH_ROOT/cases/<NewCase>/Makefile.h
 ./setup <NewCase> -auto -objdir=cases/<NewCase>  # 重 setup
 ```
 
@@ -172,10 +174,10 @@ SetupError: parfile 'X.par' not found
 echo "你写的 -parfile=<X>"
 
 # 2. 在 source 下找
-find /home/ubuntu/local/flash/FLASH4.8/FLASH/FLASH4.8/source/Simulation/SimulationMain/<算例>/ -name "<X>*"
+find $FLASH_ROOT/source/Simulation/SimulationMain/<算例>/ -name "<X>*"
 
 # 3. 列算例所有 parfile
-ls /home/ubuntu/local/flash/FLASH4.8/FLASH/FLASH4.8/source/Simulation/SimulationMain/<算例>/*.par
+ls $FLASH_ROOT/source/Simulation/SimulationMain/<算例>/*.par
 ```
 
 ### 通用原因
@@ -192,8 +194,8 @@ ls /home/ubuntu/local/flash/FLASH4.8/FLASH/FLASH4.8/source/Simulation/Simulation
 
 **修**：把 parfile 拷到当前算例目录：
 ```bash
-cp /home/ubuntu/local/flash/FLASH4.8/FLASH/FLASH4.8/source/Simulation/SimulationMain/<其他算例>/<X>.par \
-   /home/ubuntu/local/flash/FLASH4.8/FLASH/FLASH4.8/source/Simulation/SimulationMain/<当前算例>/<X>.par
+cp $FLASH_ROOT/source/Simulation/SimulationMain/<其他算例>/<X>.par \
+   $FLASH_ROOT/source/Simulation/SimulationMain/<当前算例>/<X>.par
 ```
 
 #### 原因 3：parfile 还没创建（自定义算例）
@@ -228,10 +230,10 @@ ed_init: ERROR: Number of species (4) does not match simulation parameters
 echo "你写的 species=<X,Y,Z,...>"
 
 # 2. 算例 Config 期望几个
-grep -i "USESETUPVARS\|species\|nspec" /home/ubuntu/local/flash/FLASH4.8/FLASH/FLASH4.8/source/Simulation/SimulationMain/<算例>/Config
+grep -i "USESETUPVARS\|species\|nspec" $FLASH_ROOT/source/Simulation/SimulationMain/<算例>/Config
 
 # 3. setup 后实际生成几个
-grep "NSPECIES" /home/ubuntu/local/flash/FLASH4.8/FLASH/FLASH4.8/cases/<case>/setup_defines
+grep "NSPECIES" $FLASH_ROOT/cases/<case>/setup_defines
 ```
 
 ### 通用原因
@@ -267,13 +269,13 @@ setup 跑通了，但 `cases/<case>/setup_defines` 里没看到期望的编译�
 
 ```bash
 # 1. setup_defines 实际内容
-cat /home/ubuntu/local/flash/FLASH4.8/FLASH/FLASH4.8/cases/<case>/setup_defines
+cat $FLASH_ROOT/cases/<case>/setup_defines
 
 # 2. setup_vars 看 setup-variables 实际值
-grep -E "ThreeT|Mtmmmt|Laser|Mgd" /home/ubuntu/local/flash/FLASH4.8/FLASH/FLASH4.8/cases/<case>/setup_call
+grep -E "ThreeT|Mtmmmt|Laser|Mgd" $FLASH_ROOT/cases/<case>/setup_call
 
 # 3. setup_call 看原始命令
-cat /home/ubuntu/local/flash/FLASH4.8/FLASH/FLASH4.8/cases/<case>/setup_call
+cat $FLASH_ROOT/cases/<case>/setup_call
 ```
 
 ### 通用原因
@@ -292,7 +294,7 @@ cat /home/ubuntu/local/flash/FLASH4.8/FLASH/FLASH4.8/cases/<case>/setup_call
 
 **验证**：
 ```bash
-grep -i "REQUIRES\|threeT\|setupvar" /home/ubuntu/local/flash/FLASH4.8/FLASH/FLASH4.8/source/Simulation/SimulationMain/<算例>/Config
+grep -i "REQUIRES\|threeT\|setupvar" $FLASH_ROOT/source/Simulation/SimulationMain/<算例>/Config
 ```
 
 ### 怎么修
@@ -313,11 +315,11 @@ grep -i "REQUIRES\|threeT\|setupvar" /home/ubuntu/local/flash/FLASH4.8/FLASH/FLA
 
 ```bash
 # 1. ldd flash4（如果已编译）
-ldd /home/ubuntu/local/flash/FLASH4.8/FLASH/FLASH4.8/cases/<case>/flash4 2>/dev/null | grep mpi
+ldd $FLASH_ROOT/cases/<case>/flash4 2>/dev/null | grep mpi
 
 # 2. 系统库 vs 用户库
 ls /lib/x86_64-linux-gnu/libmpi.so* 2>/dev/null
-ls /home/ubuntu/local/flash/myFLASH4.8/mpich/lib/libmpi.so* 2>/dev/null
+ls $FLASH_LIBS/mpich/lib/libmpi.so* 2>/dev/null
 ```
 
 ### 通用原因
@@ -348,7 +350,7 @@ sudo mv /lib/x86_64-linux-gnu/libmpi.so.40.bak /lib/x86_64-linux-gnu/libmpi.so.4
 #### 方案 B：设 LD_LIBRARY_PATH
 
 ```bash
-export LD_LIBRARY_PATH=/home/ubuntu/local/flash/myFLASH4.8/mpich/lib:$LD_LIBRARY_PATH
+export LD_LIBRARY_PATH=$FLASH_LIBS/mpich/lib:$LD_LIBRARY_PATH
 mpirun -np 4 ./flash4 -par_file flash.par
 ```
 
@@ -375,16 +377,16 @@ cannot find -lHYPRE
 
 ```bash
 # 1. make 错误前 30 行
-cd /home/ubuntu/local/flash/FLASH4.8/FLASH/FLASH4.8/cases/<case>
+cd $FLASH_ROOT/cases/<case>
 make -j4 2>&1 | head -30
 
 # 2. Makefile.h 库路径
 grep -E "MPI_PATH|HDF5_PATH|HYPRE_PATH" Makefile.h
 
 # 3. 库实际存在吗
-ls /home/ubuntu/local/flash/myFLASH4.8/mpich/include/mpi.h
-ls /home/ubuntu/local/flash/myFLASH4.8/hdf5/include/hdf5.h
-ls /home/ubuntu/local/flash/myFLASH4.8/hypre/lib/libHYPRE.*
+ls $FLASH_LIBS/mpich/include/mpi.h
+ls $FLASH_LIBS/hdf5/include/hdf5.h
+ls $FLASH_LIBS/hypre/lib/libHYPRE.*
 ```
 
 ### 通用原因
@@ -395,8 +397,8 @@ ls /home/ubuntu/local/flash/myFLASH4.8/hypre/lib/libHYPRE.*
 
 **修**：用本机配置：
 ```bash
-cp /home/ubuntu/local/flash/FLASH4.8/FLASH/FLASH4.8/cases/LaserSlab/Makefile.h \
-   /home/ubuntu/local/flash/FLASH4.8/FLASH/FLASH4.8/cases/<case>/Makefile.h
+cp $FLASH_ROOT/cases/LaserSlab/Makefile.h \
+   $FLASH_ROOT/cases/<case>/Makefile.h
 make -j4
 ```
 

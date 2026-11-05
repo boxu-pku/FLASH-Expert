@@ -22,6 +22,8 @@ tags:
 ---
 
 # Diffuse 踩坑排查（按 L-012 诊断引导 + L-008 贴源码）
+> 路径约定：`$FLASH_ROOT` = FLASH 4.8 仓库根目录（本机 `/home/ubuntu/local/flash/FLASH4.8/FLASH/FLASH4.8`）；`$FLASH_LIBS` = 外部库根目录（本机 `/home/ubuntu/local/flash/myFLASH4.8`）。其它机器按实际路径替换。
+
 
 > **TL;DR**：~15 类常见错误，分 5 组：A. HYPRE 不收敛（最高频）；B. flux limiter 选错；C. dt 限制问题；D. 边界条件错；E. 启动 abort。**按 L-012**：所有诊断先引导贴现场（HYPRE 输出 + parfile + setup_call），再展开通用原因。**按 L-008**：abort 类贴触发代码。**按 L-013**：聚焦主流问题（HYPRE / flux limiter）。
 
@@ -161,7 +163,7 @@ diff_eleFlMode = "fl_larsen"   # 平滑过渡
 ```bash
 # 检查 Makefile.h
 grep HYPRE_PATH cases/<case>/Makefile.h
-# 应看到：HYPRE_PATH = /home/ubuntu/local/flash/myFLASH4.8/hypre
+# 应看到：HYPRE_PATH = $FLASH_LIBS/hypre
 
 # 验证库存在
 ls -la $HYPRE_PATH/lib/libHYPRE.a

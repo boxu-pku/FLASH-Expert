@@ -11,6 +11,8 @@ source_anchors:
 ---
 
 # setup 选项详查
+> 路径约定：`$FLASH_ROOT` = FLASH 4.8 仓库根目录（本机 `/home/ubuntu/local/flash/FLASH4.8/FLASH/FLASH4.8`）；`$FLASH_LIBS` = 外部库根目录（本机 `/home/ubuntu/local/flash/myFLASH4.8`）。其它机器按实际路径替换。
+
 
 > 每个选项按 L-011 五要素展开：**是什么 / 为什么有它 / 为什么这么设计 / 何时用 / 有什么坑**。
 > 按 L-013 聚焦 HEDP 主流选项详讲，边缘选项简表。
@@ -58,7 +60,7 @@ FLASH 有 59+ 个算例（`source/Simulation/SimulationMain/` 下每个目录都
 
 ### 怎么查所有可用算例
 ```bash
-ls /home/ubuntu/local/flash/FLASH4.8/FLASH/FLASH4.8/source/Simulation/SimulationMain/
+ls $FLASH_ROOT/source/Simulation/SimulationMain/
 ```
 
 ---

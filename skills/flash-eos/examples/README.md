@@ -1,4 +1,6 @@
 # examples/ — flash-eos 配置示例
+> 路径约定：`$FLASH_ROOT` = FLASH 4.8 仓库根目录（本机 `/home/ubuntu/local/flash/FLASH4.8/FLASH/FLASH4.8`）；`$FLASH_LIBS` = 外部库根目录（本机 `/home/ubuntu/local/flash/myFLASH4.8`）。其它机器按实际路径替换。
+
 
 > 4 个文件覆盖 3 种变体 + 1 个完整 parfile 片段。
 
@@ -16,7 +18,7 @@
 直接复制到 case 目录运行：
 
 ```bash
-cd /home/ubuntu/local/flash/FLASH4.8/FLASH/FLASH4.8
+cd $FLASH_ROOT
 # 改 setup-helmholtz.sh 里的 problem 名后
 bash skills/flash-eos/examples/setup-helmholtz.sh
 ```

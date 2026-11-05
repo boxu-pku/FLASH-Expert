@@ -9,6 +9,8 @@ physics: 纯 Hydro，单物质，无激光/MGD/3T
 ---
 
 # Sedov 爆炸算例配方
+> 路径约定：`$FLASH_ROOT` = FLASH 4.8 仓库根目录（本机 `/home/ubuntu/local/flash/FLASH4.8/FLASH/FLASH4.8`）；`$FLASH_LIBS` = 外部库根目录（本机 `/home/ubuntu/local/flash/myFLASH4.8`）。其它机器按实际路径替换。
+
 
 > Sedov 是 FLASH 的**入门算例**——最简单的纯 Hydro 模拟。如果你第一次跑 FLASH，从这里开始。
 >
@@ -31,7 +33,7 @@ physics: 纯 Hydro，单物质，无激光/MGD/3T
 ### 步骤 1: setup
 
 ```bash
-cd /home/ubuntu/local/flash/FLASH4.8/FLASH/FLASH4.8
+cd $FLASH_ROOT
 
 # Sedov 是最简单的 setup——无需任何 setup-variables
 ./setup Sedov -auto -objdir=cases/Sedov
@@ -70,7 +72,7 @@ ls -lh flash4
 
 ```bash
 # 必须先 source flash_env.sh（即使 Sedov 也用 MPI）
-source /home/ubuntu/local/flash/FLASH4.8/FLASH/FLASH4.8/flash_env.sh
+source $FLASH_ROOT/flash_env.sh
 
 cd cases/Sedov
 mkdir -p 01-data && cd 01-data
@@ -119,7 +121,7 @@ grep -i "block" cases/Sedov/01-data/flash.log | tail -20
 
 见 `examples/run-sedov.sh`：
 ```bash
-bash /home/ubuntu/local/flash/FLASH4.8/FLASH/FLASH4.8/skills/flash-case-runner/examples/run-sedov.sh
+bash $FLASH_ROOT/skills/flash-case-runner/examples/run-sedov.sh
 ```
 
 ## 4. 常见坑

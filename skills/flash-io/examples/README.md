@@ -1,4 +1,6 @@
 # flash-io examples/
+> 路径约定：`$FLASH_ROOT` = FLASH 4.8 仓库根目录（本机 `/home/ubuntu/local/flash/FLASH4.8/FLASH/FLASH4.8`）；`$FLASH_LIBS` = 外部库根目录（本机 `/home/ubuntu/local/flash/myFLASH4.8`）。其它机器按实际路径替换。
+
 
 本目录含 LaserSlab / HEDP 算例的标准 IO 配置示例。按 L-005 用纯 parfile / shell 格式（可直接 `cp` 使用，不用 markdown 包裹）。
 
@@ -16,7 +18,7 @@
 
 ```bash
 # 复制 setup 脚本到任意位置（或直接用）
-cd /home/ubuntu/local/flash/FLASH4.8/FLASH/FLASH4.8
+cd $FLASH_ROOT
 
 # 编辑 setup-hdf5-parallel.sh，确认 FLASH_DIR / CASE_NAME / CASE_DIR 路径正确
 # 然后：
@@ -35,7 +37,7 @@ cd cases/LaserSlab
 
 ```bash
 # 用和原 run 完全一致的 setup（仅 -objdir / -parfile 不同）
-cd /home/ubuntu/local/flash/FLASH4.8/FLASH/FLASH4.8
+cd $FLASH_ROOT
 ./setup LaserSlab -2d -auto +cylindrical -nxb=16 -nyb=16 \
         +hdf5typeio species=cham,targ +mtmmmt +laser +uhd3t +mgd mgd_meshgroups=6 \
         -objdir=cases/LaserSlab_restart -parfile=restart.par

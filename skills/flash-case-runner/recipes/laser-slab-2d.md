@@ -10,6 +10,8 @@ machine_verified: ares (2026-08-02 实战通过 66 步)
 ---
 
 # LaserSlab 2D 圆柱 HEDP 算例配方
+> 路径约定：`$FLASH_ROOT` = FLASH 4.8 仓库根目录（本机 `/home/ubuntu/local/flash/FLASH4.8/FLASH/FLASH4.8`）；`$FLASH_LIBS` = 外部库根目录（本机 `/home/ubuntu/local/flash/myFLASH4.8`）。其它机器按实际路径替换。
+
 
 > LaserSlab 是 FLASH 的 **HEDP 主流算例**——激光打平面靶，含激光沉积 + 3T EOS + MGD 辐射 + 多物质。
 >
@@ -49,7 +51,7 @@ machine_verified: ares (2026-08-02 实战通过 66 步)
 ### 步骤 1: setup（关键参数选择）
 
 ```bash
-cd /home/ubuntu/local/flash/FLASH4.8/FLASH/FLASH4.8
+cd $FLASH_ROOT
 
 ./setup LaserSlab -2d -auto +cylindrical \
   -nxb=16 -nyb=16 +hdf5typeio \
@@ -96,7 +98,7 @@ cat setup_defines | head -10
 
 # 4. 看 Makefile.h 的 site 配置
 grep -E "MPI_PATH|HDF5_PATH|HYPRE_PATH" Makefile.h
-# 应该是 /home/ubuntu/local/flash/myFLASH4.8/*
+# 应该是 $FLASH_LIBS/*
 
 # 5. 看 flash.par 是否复制过来
 ls flash.par
@@ -138,14 +140,14 @@ ldd flash4 | grep -E "mpi|hdf5|HYPRE"
 > plt/chk/dat/log 全落 01-data，objdir 根目录只留编译产物和 flash.par。
 
 ```bash
-cd /home/ubuntu/local/flash/FLASH4.8/FLASH/FLASH4.8
+cd $FLASH_ROOT
 
 # 必须先 source flash_env.sh（设 LD_PRELOAD 避免 libmpi 冲突）
 source flash_env.sh
 
 # 应该看到：
 # MPI:  MPICH ...
-# LD_PRELOAD:    /home/ubuntu/local/flash/myFLASH4.8/mpich/lib/libmpi.so
+# LD_PRELOAD:    $FLASH_LIBS/mpich/lib/libmpi.so
 
 cd cases/LaserSlab
 mkdir -p 01-data && cd 01-data
@@ -165,7 +167,7 @@ ps -p $FLASH_PID
 
 **前台跑（短测试用）**：
 ```bash
-source /home/ubuntu/local/flash/FLASH4.8/FLASH/FLASH4.8/flash_env.sh
+source $FLASH_ROOT/flash_env.sh
 cd cases/LaserSlab/01-data
 mpirun -np 2 ../flash4 -par_file ../flash.par 2>&1 | tee flash.log
 ```
@@ -204,7 +206,7 @@ grep -i "nan\|below floor" flash.log | head
 
 **用 examples/flash_log_parser.sh 自动解析**：
 ```bash
-bash /home/ubuntu/local/flash/FLASH4.8/FLASH/FLASH4.8/skills/flash-case-runner/examples/flash_log_parser.sh cases/LaserSlab/01-data/flash.log
+bash $FLASH_ROOT/skills/flash-case-runner/examples/flash_log_parser.sh cases/LaserSlab/01-data/flash.log
 ```
 
 ## 3. LaserSlab parfile 关键参数
@@ -415,7 +417,7 @@ RO 表: 1200 个值, 最大 |log10差| = 4.999e-07
 
 见 `examples/run-laser-slab.sh`：
 ```bash
-bash /home/ubuntu/local/flash/FLASH4.8/FLASH/FLASH4.8/skills/flash-case-runner/examples/run-laser-slab.sh
+bash $FLASH_ROOT/skills/flash-case-runner/examples/run-laser-slab.sh
 ```
 
 ## 6. 验证标准（2026-08-02 实战）
