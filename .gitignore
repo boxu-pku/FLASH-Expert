@@ -21,6 +21,27 @@ agent/manual/*/*-raw2*.txt
 # === draft 归档 ===
 agent/drafts/archive/
 
+# === FLASH 4.8 源码发行树（本仓库只管 Expert Agent，不传源码）===
+/source/
+/bin/
+/tools/
+/lib/
+/docs/
+/sites/
+/cases/
+/setup
+/setup_alt
+/RELEASE
+/RELEASE-NOTES
+/note.txt
+
+# === 与 FLASH-Expert 无关的本机项目 ===
+/work/
+/ai_agent_ppt/
+
+# === ZCode 会话临时文件（skills 要跟踪，plans 不跟踪）===
+.zcode/plans/
+
 # === 旧版 .gitignore 内容 ===
 object/
 *.o
