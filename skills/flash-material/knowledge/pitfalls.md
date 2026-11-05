@@ -573,7 +573,7 @@ grep "TELE\|minimum\|maximum" 01-data/<basenm>.log
 - **内部实现**：`knowledge/internals.md`
 - **典型配置**：`knowledge/recipes.md`
 - **LaserSlab 实际 parfile**：`source/Simulation/SimulationMain/LaserSlab/flash.par`
-- **跨单元踩坑**：`agent/pitfalls/`（如有）
+- **跨单元踩坑**：`skills/flash-pitfall-finder/knowledge/pitfalls/`（如有）
 - **手册**：FLASH 4.8 User Guide §16-§17
 
 ---

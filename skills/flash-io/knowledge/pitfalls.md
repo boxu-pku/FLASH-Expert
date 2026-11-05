@@ -281,7 +281,7 @@ make -j4
 sudo mv /lib/x86_64-linux-gnu/libmpi.so.40.bak /lib/x86_64-linux-gnu/libmpi.so.40
 ```
 
-详见 `agent/pitfalls/` 或 `note.txt`（系统级问题，非本 skill 范围）。
+详见 `skills/flash-pitfall-finder/knowledge/pitfalls/` 或 `note.txt`（系统级问题，非本 skill 范围）。
 
 ---
 

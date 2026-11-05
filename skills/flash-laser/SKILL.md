@@ -170,7 +170,7 @@ owner: user
 
 1. **理解意图**：判断问题属于哪个范畴（参数/物理/源码/配置/调试）
 2. **检索本 skill 的 knowledge/**：
-   - 用 `rg -i '<keyword>' .claude/skills/flash-laser/knowledge/` 找相关段落
+   - 用 `rg -i '<keyword>' skills/flash-laser/knowledge/` 找相关段落
    - 命中 → 基于内容回答，**必须引用源码路径:行号**
    - 未命中 → 进入 2.3
 3. **回答格式**：

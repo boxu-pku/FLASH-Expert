@@ -16,8 +16,8 @@ tags:
   - MPI_COMM_NULL
   - Allreduce
 related:
-  - agent/pitfalls/mpi-errors.md
-  - agent/pitfalls/libmpi-conflict.md
+  - skills/flash-pitfall-finder/knowledge/pitfalls/mpi-errors.md
+  - skills/flash-pitfall-finder/knowledge/pitfalls/libmpi-conflict.md
 ---
 
 # 长跑后 ROMIO Allreduce on MPI_COMM_NULL 崩溃

@@ -20,10 +20,10 @@ cd /home/ubuntu/local/flash/FLASH4.8/FLASH/FLASH4.8
 
 # 编辑 setup-hdf5-parallel.sh，确认 FLASH_DIR / CASE_NAME / CASE_DIR 路径正确
 # 然后：
-bash .claude/skills/flash-io/examples/setup-hdf5-parallel.sh
+bash skills/flash-io/examples/setup-hdf5-parallel.sh
 
 # 复制 parfile 片段到你的 flash.par
-cp .claude/skills/flash-io/examples/parfile-io-control.txt cases/LaserSlab/flash.par
+cp skills/flash-io/examples/parfile-io-control.txt cases/LaserSlab/flash.par
 # 编辑 flash.par，调整 basenm / 输出频率 / plot_var 等
 
 # 跑
@@ -41,7 +41,7 @@ cd /home/ubuntu/local/flash/FLASH4.8/FLASH/FLASH4.8
         -objdir=cases/LaserSlab_restart -parfile=restart.par
 
 # 复制 restart parfile 模板
-cp .claude/skills/flash-io/examples/restart-recipe.txt cases/LaserSlab_restart/restart.par
+cp skills/flash-io/examples/restart-recipe.txt cases/LaserSlab_restart/restart.par
 # 编辑 restart.par，设 checkpointFileNumber 为要读的编号
 
 # 把 chk 文件拷过来

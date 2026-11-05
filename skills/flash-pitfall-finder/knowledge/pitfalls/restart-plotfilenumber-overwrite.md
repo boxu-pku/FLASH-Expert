@@ -13,8 +13,8 @@ tags:
   - IO
   - 数据覆盖
 related:
-  - agent/pitfalls/restart-incompatibility.md
-  - agent/pitfalls/mpi-romio-null-comm-allreduce.md
+  - skills/flash-pitfall-finder/knowledge/pitfalls/restart-incompatibility.md
+  - skills/flash-pitfall-finder/knowledge/pitfalls/mpi-romio-null-comm-allreduce.md
 ---
 
 # restart 续跑不设 plotFileNumber → 覆盖旧 plotfile

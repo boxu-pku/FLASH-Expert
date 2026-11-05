@@ -3,15 +3,17 @@ title: 全阶段踩坑汇总——setup / make / run / restart
 skill: flash-case-runner
 category: pitfalls
 source_anchors:
-  - agent/pitfalls/libmpi-conflict.md
-  - agent/pitfalls/mpi-errors.md
-  - agent/pitfalls/restart-incompatibility.md
-  - agent/pitfalls/setup-unit-not-found.md
-  - agent/pitfalls/site-not-found.md
-  - agent/pitfalls/ffpe-trap-and-nan.md
+  - skills/flash-pitfall-finder/knowledge/pitfalls/libmpi-conflict.md
+  - skills/flash-pitfall-finder/knowledge/pitfalls/mpi-errors.md
+  - skills/flash-pitfall-finder/knowledge/pitfalls/restart-incompatibility.md
+  - skills/flash-pitfall-finder/knowledge/pitfalls/setup-unit-not-found.md
+  - skills/flash-pitfall-finder/knowledge/pitfalls/site-not-found.md
+  - skills/flash-pitfall-finder/knowledge/pitfalls/ffpe-trap-and-nan.md
 ---
 
 # 全阶段踩坑汇总
+> 路径约定：`$FLASH_ROOT` = FLASH 4.8 仓库根目录（本机 `/home/ubuntu/local/flash/FLASH4.8/FLASH/FLASH4.8`）；`$FLASH_LIBS` = 外部库根目录（本机 `/home/ubuntu/local/flash/myFLASH4.8`，含 mpich/hdf5/hypre）。其它机器按实际路径替换。
+
 
 > 本文是 flash-case-runner skill 的**踩坑速查**——覆盖 setup / make / run / restart 四阶段常见错误。
 >
@@ -20,7 +22,7 @@ source_anchors:
 > - **贴什么现场**：具体命令（用户复制粘贴就行）
 > - **机制**：为什么会触发（L-008：非源码错不贴凑数代码）
 > - **修复**：具体步骤
-> - **关联**：agent/pitfalls/ 详细文档（如有）
+> - **关联**：skills/flash-pitfall-finder/knowledge/pitfalls/ 详细文档（如有）
 
 ## 速查索引
 
@@ -53,11 +55,11 @@ source_anchors:
 | restart | NXB 不一致 abort | §4.1 |
 | restart | species 数变了 abort | §4.2 |
 | restart | restartFile 无效参数 / 找不到 chk | §4.3 |
-| restart | 续跑覆盖旧 plotfile（plotFileNumber 未设） | §4.3 + `agent/pitfalls/restart-plotfilenumber-overwrite.md` |
-| restart | 续跑后定时 plotfile 是空壳（无物理场数据集，日志却正常） | `agent/pitfalls/restart-skeleton-plotfiles.md` |
-| run/IO | plotfile 数量爆炸（每步一个） | §5.4 + `agent/pitfalls/plotfile-interval-too-dense.md` |
-| run | `-parfile=X` 被静默忽略（读了默认 flash.par） | `agent/pitfalls/parfile-flag-ignored.md`（正确：`-par_file X`） |
-| run | 长跑后 `internal_Allreduce ... MPI_COMM_NULL` | §3.1.1 + `agent/pitfalls/mpi-romio-null-comm-allreduce.md` |
+| restart | 续跑覆盖旧 plotfile（plotFileNumber 未设） | §4.3 + `skills/flash-pitfall-finder/knowledge/pitfalls/restart-plotfilenumber-overwrite.md` |
+| restart | 续跑后定时 plotfile 是空壳（无物理场数据集，日志却正常） | `skills/flash-pitfall-finder/knowledge/pitfalls/restart-skeleton-plotfiles.md` |
+| run/IO | plotfile 数量爆炸（每步一个） | §5.4 + `skills/flash-pitfall-finder/knowledge/pitfalls/plotfile-interval-too-dense.md` |
+| run | `-parfile=X` 被静默忽略（读了默认 flash.par） | `skills/flash-pitfall-finder/knowledge/pitfalls/parfile-flag-ignored.md`（正确：`-par_file X`） |
+| run | 长跑后 `internal_Allreduce ... MPI_COMM_NULL` | §3.1.1 + `skills/flash-pitfall-finder/knowledge/pitfalls/mpi-romio-null-comm-allreduce.md` |
 
 ---
 
@@ -89,7 +91,7 @@ cat setup_error.log | grep -A30 "Defined Setup Variables"
 | setup-variable 没开 | 看 setup_flags | 加 `+laser` 等 |
 | Config 路径错 | `cat source/Simulation/SimulationMain/<算例>/Config` | 改 Config |
 
-**详细**：见 `agent/pitfalls/setup-unit-not-found.md`。
+**详细**：见 `skills/flash-pitfall-finder/knowledge/pitfalls/setup-unit-not-found.md`。
 
 ### 1.2 site not found
 
@@ -101,7 +103,7 @@ SetupError: Site '<hostname>' not found in sites/ directory
 **贴什么现场**：
 ```bash
 echo "Hostname: $(hostname)"
-ls /home/ubuntu/local/flash/FLASH4.8/FLASH/FLASH4.8/sites/ 2>/dev/null || echo "sites/ 不存在"
+ls $FLASH_ROOT/sites/ 2>/dev/null || echo "sites/ 不存在"
 ```
 
 **机制**：本机无 `sites/ares/`，setup.py 找不到 site 配置。
@@ -119,7 +121,7 @@ ls /home/ubuntu/local/flash/FLASH4.8/FLASH/FLASH4.8/sites/ 2>/dev/null || echo "
    ./setup <NewCase> -auto -objdir=cases/<NewCase>  # 重试
    ```
 
-**详细**：见 `agent/pitfalls/site-not-found.md` + `setup_guide.md §4`。
+**详细**：见 `skills/flash-pitfall-finder/knowledge/pitfalls/site-not-found.md` + `setup_guide.md §4`。
 
 ### 1.3 species 数量错
 
@@ -202,7 +204,7 @@ grep MPI_PATH cases/<case>/Makefile.h
 系统库路径 /lib/x86_64-linux-gnu/
 └── libmpi.so.40  ← 系统 OpenMPI（Ubuntu apt 装的）
 
-用户库路径 /home/ubuntu/local/flash/myFLASH4.8/mpich/lib/
+用户库路径 $FLASH_LIBS/mpich/lib/
 └── libmpi.so.12  ← 用户自建 mpich（FLASH 编译用这个）
 ```
 
@@ -218,10 +220,10 @@ make -j4
 sudo mv /lib/x86_64-linux-gnu/libmpi.so.40.bak /lib/x86_64-linux-gnu/libmpi.so.40
 
 # 运行期处理
-source /home/ubuntu/local/flash/FLASH4.8/FLASH/FLASH4.8/flash_env.sh
+source $FLASH_ROOT/flash_env.sh
 ```
 
-**详细**：见 `agent/pitfalls/libmpi-conflict.md` + `make_guide.md §3`。
+**详细**：见 `skills/flash-pitfall-finder/knowledge/pitfalls/libmpi-conflict.md` + `make_guide.md §3`。
 
 ### 2.2 undefined reference to 'X'
 
@@ -267,9 +269,9 @@ grep -E "MPI_PATH|HDF5_PATH|HYPRE_PATH|LIB_" cases/<case>/Makefile.h
 **贴什么现场**：
 ```bash
 echo "LD_LIBRARY_PATH: $LD_LIBRARY_PATH"
-ls /home/ubuntu/local/flash/myFLASH4.8/mpich/lib/ | grep -i mpi
-ls /home/ubuntu/local/flash/myFLASH4.8/hdf5/lib/ 2>/dev/null
-ls /home/ubuntu/local/flash/myFLASH4.8/hypre/lib/ 2>/dev/null
+ls $FLASH_LIBS/mpich/lib/ | grep -i mpi
+ls $FLASH_LIBS/hdf5/lib/ 2>/dev/null
+ls $FLASH_LIBS/hypre/lib/ 2>/dev/null
 ```
 
 **机制**：ld 找不到库文件 `.so` / `.a`。
@@ -328,7 +330,7 @@ make: *** No rule to make target 'X'. Stop.
 **修复**：
 ```bash
 # 重 setup
-cd /home/ubuntu/local/flash/FLASH4.8/FLASH/FLASH4.8
+cd $FLASH_ROOT
 rm -rf cases/<case>
 ./setup <算例> [选项] -objdir=cases/<case>
 ```
@@ -381,11 +383,11 @@ flash4 启动时 loader 找 `libmpi.so`：
 **修复**：
 ```bash
 cd cases/<case>/01-data   # 硬约束：在 01-data/ 里跑，输出不散落 objdir 根目录
-source /home/ubuntu/local/flash/FLASH4.8/FLASH/FLASH4.8/flash_env.sh
+source $FLASH_ROOT/flash_env.sh
 mpirun -np 2 ../flash4 -par_file ../flash.par
 ```
 
-**详细**：见 `agent/pitfalls/libmpi-conflict.md` + `agent/pitfalls/mpi-errors.md` + `run_guide.md §1.4`。
+**详细**：见 `skills/flash-pitfall-finder/knowledge/pitfalls/libmpi-conflict.md` + `skills/flash-pitfall-finder/knowledge/pitfalls/mpi-errors.md` + `run_guide.md §1.4`。
 
 ### 3.1.1 长跑后 `internal_Allreduce ... MPI_COMM_NULL`（ROMIO 集合 I/O，2026-08-10 排查）
 
@@ -402,7 +404,7 @@ internal_Allreduce(45).: Null communicator
 
 **修复**：① restart 续跑；② 降 plotfile 频率（`plotFileIntervalTime` 别小于 dt）；③ 复发则 `export ROMIO_CB_WRITE=disable` 绕过 two-phase。
 
-**详细**：见 `agent/pitfalls/mpi-romio-null-comm-allreduce.md`（含完整证据链：handle 解码 + objdir Allreduce 穷举 + 反汇编 op 创建点 + 5 行 C 程序逐字复现指纹）。
+**详细**：见 `skills/flash-pitfall-finder/knowledge/pitfalls/mpi-romio-null-comm-allreduce.md`（含完整证据链：handle 解码 + objdir Allreduce 穷举 + 反汇编 op 创建点 + 5 行 C 程序逐字复现指纹）。
 
 ### 3.2 forrtl: error (65): floating invalid
 
@@ -435,7 +437,7 @@ grep -i "nan\|below floor" cases/<case>/01-data/flash.log | head -10
 | EOS 表超范围 | `grep "EOS.*out of" cases/<case>/01-data/flash.log` | 扩展表范围或调 floor |
 | 激光参数错 | `grep ed_ cases/<case>/flash.par` | 见 `flash-laser` |
 
-**详细**：见 `agent/pitfalls/ffpe-trap-and-nan.md`。
+**详细**：见 `skills/flash-pitfall-finder/knowledge/pitfalls/ffpe-trap-and-nan.md`。
 
 ### 3.3 forrtl: error (72): floating overflow
 
@@ -732,7 +734,7 @@ h5dump -A cases/<case>/<basenm>_hdf5_chk_0020.h5 | grep -i "nxb\|nyb"
 ./setup <算例> -nxb=<原 NXB> ... -objdir=cases/<case>
 ```
 
-**详细**：见 `agent/pitfalls/restart-incompatibility.md`。
+**详细**：见 `skills/flash-pitfall-finder/knowledge/pitfalls/restart-incompatibility.md`。
 
 ### 4.2 species 数变了 abort
 
@@ -775,7 +777,7 @@ plotFileNumber       = 1630   # 写 plt 续接编号 = 原序列最后编号 + 1
 
 **⚠️ 连带坑**：不设 `plotFileNumber`，parfile 里遗留的 `plotFileNumber = 0` 会覆盖 chk 存的计数器，
 新 plt 从 0 重编号并**静默覆盖**旧 plotfile（2026-08-10 Sunliang_Xray 实战，损失 22 个早期 plt）。
-见 `agent/pitfalls/restart-plotfilenumber-overwrite.md`。
+见 `skills/flash-pitfall-finder/knowledge/pitfalls/restart-plotfilenumber-overwrite.md`。
 
 ### 4.4 续跑后 block 数暴涨
 
@@ -860,7 +862,7 @@ rm cases/<case>/01-data/*_hdf5_chk_*
 plotFileIntervalTime = 0.1e-09   # ≥ 5×dt；或按步 plotFileIntervalStep = 50
 ```
 **经验法则**：整个算例 plt 总量控制在 100~500 个。
-详见 `agent/pitfalls/plotfile-interval-too-dense.md`。
+详见 `skills/flash-pitfall-finder/knowledge/pitfalls/plotfile-interval-too-dense.md`。
 
 ---
 

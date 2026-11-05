@@ -210,7 +210,7 @@
 ## 6. EnergyDeposition / Laser（激光）
 
 > 文件：`source/physics/sourceTerms/EnergyDeposition/EnergyDepositionMain/Laser/Config`
-> 详细见 `.claude/skills/flash-laser/knowledge/params.md`（38 全局 + pulse/beam 字典）
+> 详细见 `skills/flash-laser/knowledge/params.md`（38 全局 + pulse/beam 字典）
 
 ### 总开关
 

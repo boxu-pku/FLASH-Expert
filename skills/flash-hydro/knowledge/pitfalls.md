@@ -394,7 +394,7 @@ dt 应该稳定或缓慢变化；突然爆降通常意味着局部数值不稳�
 - **CTU 内部流程**：`knowledge/internals.md §3`
 - **典型配置**：`knowledge/recipes.md`
 - **变体对比**：`knowledge/overview.md §2`
-- **跨单元踩坑**：`agent/pitfalls/`
+- **跨单元踩坑**：`skills/flash-pitfall-finder/knowledge/pitfalls/`
 - **Driver 主循环**：`flash-driver/knowledge/internals.md`
 - **Grid 单元**：`flash-grid/knowledge/overview.md`
 

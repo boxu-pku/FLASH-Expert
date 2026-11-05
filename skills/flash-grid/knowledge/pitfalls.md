@@ -422,7 +422,7 @@ grep "block count\|nblocks" 01-data/<basenm>.log | head -20
 - **Grid 参数完整字典**：`knowledge/params.md`
 - **AMR 内部机制**：`knowledge/internals.md §4`
 - **典型配置**：`knowledge/recipes.md`
-- **跨单元踩坑**：`agent/pitfalls/`
+- **跨单元踩坑**：`skills/flash-pitfall-finder/knowledge/pitfalls/`
 - ** Driver 主循环 Grid 调用顺序**：`flash-driver/knowledge/internals.md`
 - **找 Grid_* 源码**：`flash-source-reader` skill
 

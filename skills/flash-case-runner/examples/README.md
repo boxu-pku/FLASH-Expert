@@ -16,10 +16,10 @@
 
 ```bash
 # 跑 Sedov（默认 2 核）
-bash /home/ubuntu/local/flash/FLASH4.8/FLASH/FLASH4.8/.claude/skills/flash-case-runner/examples/run-sedov.sh
+bash /home/ubuntu/local/flash/FLASH4.8/FLASH/FLASH4.8/skills/flash-case-runner/examples/run-sedov.sh
 
 # 跑 4 核
-bash /home/ubuntu/local/flash/FLASH4.8/FLASH/FLASH4.8/.claude/skills/flash-case-runner/examples/run-sedov.sh 4
+bash /home/ubuntu/local/flash/FLASH4.8/FLASH/FLASH4.8/skills/flash-case-runner/examples/run-sedov.sh 4
 ```
 
 **做什么**：
@@ -34,10 +34,10 @@ bash /home/ubuntu/local/flash/FLASH4.8/FLASH/FLASH4.8/.claude/skills/flash-case-
 
 ```bash
 # 前台跑（默认 2 核）
-bash /home/ubuntu/local/flash/FLASH4.8/FLASH/FLASH4.8/.claude/skills/flash-case-runner/examples/run-laser-slab.sh
+bash /home/ubuntu/local/flash/FLASH4.8/FLASH/FLASH4.8/skills/flash-case-runner/examples/run-laser-slab.sh
 
 # 4 核后台跑（长算例推荐）
-bash /home/ubuntu/local/flash/FLASH4.8/FLASH/FLASH4.8/.claude/skills/flash-case-runner/examples/run-laser-slab.sh 4 background
+bash /home/ubuntu/local/flash/FLASH4.8/FLASH/FLASH4.8/skills/flash-case-runner/examples/run-laser-slab.sh 4 background
 ```
 
 **做什么**：
@@ -54,7 +54,7 @@ bash /home/ubuntu/local/flash/FLASH4.8/FLASH/FLASH4.8/.claude/skills/flash-case-
 
 ```bash
 # 分析日志（在 01-data/ 里）
-bash /home/ubuntu/local/flash/FLASH4.8/FLASH/FLASH4.8/.claude/skills/flash-case-runner/examples/flash_log_parser.sh cases/LaserSlab/01-data/flash.log
+bash /home/ubuntu/local/flash/FLASH4.8/FLASH/FLASH4.8/skills/flash-case-runner/examples/flash_log_parser.sh cases/LaserSlab/01-data/flash.log
 ```
 
 **提取什么**：

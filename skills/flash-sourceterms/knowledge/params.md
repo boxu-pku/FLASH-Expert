@@ -239,7 +239,7 @@ hx_dtFactor = 1.0e+100
 - **Heatexchange.F90 主流程**：`knowledge/internals.md`
 - **典型配置**：`knowledge/recipes.md`
 - **常见错误**：`knowledge/pitfalls.md`
-- **跨单元查参数**：`flash-param-query` skill + `agent/param-index.md`
+- **跨单元查参数**：`flash-param-query` skill + `skills/flash-param-query/knowledge/param-index.md`
 
 ---
 

@@ -18,7 +18,7 @@
 ```bash
 cd /home/ubuntu/local/flash/FLASH4.8/FLASH/FLASH4.8
 # 改 setup-unsplit.sh 里的 problem 名后
-bash .claude/skills/flash-hydro/examples/setup-unsplit.sh
+bash skills/flash-hydro/examples/setup-unsplit.sh
 ```
 
 ### parfile 片段

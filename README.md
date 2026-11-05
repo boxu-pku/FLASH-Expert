@@ -116,6 +116,7 @@ claude        # 或 zcode / dsh 等
 
 > **符号链接模式的好处**：以后 `git pull` 更新本仓库，所有 harness 里的 skill 立即生效，无需重装。
 > **卸载**：`./install.sh --uninstall`（只移除本包安装的链接/副本，不动你自己的 skill）。
+> **交叉引用说明**：skill 文本里 `skills/<skill>/...` 形式的路径相对开发仓库根；安装到其它环境后对应 flash-<skill> 内的同名文件（如 `skills/flash-pitfall-finder/knowledge/pitfalls/x.md` → flash-pitfall-finder skill 的 `knowledge/pitfalls/x.md`）。`agent/...`（治理工作台）和原 PDF 不随包分发，外部环境按 skill 内标注的 fallback 处理。
 
 ---
 

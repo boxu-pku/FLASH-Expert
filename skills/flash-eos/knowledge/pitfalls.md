@@ -448,7 +448,7 @@ grep "max dens\|min dens\|max temp\|min temp" 01-data/<basenm>.log | tail -10
 - **典型配置**：`knowledge/recipes.md`
 - **Helmholtz 表机制**：`knowledge/overview.md §5`
 - **3T 设计**：`knowledge/overview.md §4`
-- **跨单元踩坑**：`agent/pitfalls/`
+- **跨单元踩坑**：`skills/flash-pitfall-finder/knowledge/pitfalls/`
 - **Heatexchange 单元**：`flash-sourceterms`（Phase 2 后）
 
 ---

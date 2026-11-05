@@ -313,7 +313,7 @@ call RuntimeParameters_get("RiemannSolver", str_RiemannSolver)
 - **CTU 流程详解**：`knowledge/internals.md`
 - **典型 setup + parfile**：`knowledge/recipes.md`
 - **常见错误**：`knowledge/pitfalls.md`
-- **跨单元查参数**：`flash-param-query` skill + `agent/param-index.md`
+- **跨单元查参数**：`flash-param-query` skill + `skills/flash-param-query/knowledge/param-index.md`
 
 ---
 

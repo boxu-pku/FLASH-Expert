@@ -283,7 +283,7 @@ grep "fallback\|negative\|warning" 01-data/<basenm>.log | head -10
 - **典型配置**：`knowledge/recipes.md`
 - **EnergyDeposition（激光）**：`flash-laser` skill
 - **EOS（3T）**：`flash-eos` skill
-- **跨单元踩坑**：`agent/pitfalls/`
+- **跨单元踩坑**：`skills/flash-pitfall-finder/knowledge/pitfalls/`
 - **手册**：FLASH 4.8 User Guide §18
 
 ---

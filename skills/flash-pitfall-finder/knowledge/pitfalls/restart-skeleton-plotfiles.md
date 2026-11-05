@@ -14,8 +14,8 @@ tags:
   - yt
   - 空壳文件
 related:
-  - agent/pitfalls/restart-plotfilenumber-overwrite.md
-  - agent/pitfalls/mpi-romio-null-comm-allreduce.md
+  - skills/flash-pitfall-finder/knowledge/pitfalls/restart-plotfilenumber-overwrite.md
+  - skills/flash-pitfall-finder/knowledge/pitfalls/mpi-romio-null-comm-allreduce.md
 ---
 
 # restart 后定时 plotfile 是空壳

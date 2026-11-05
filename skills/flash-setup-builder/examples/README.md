@@ -14,7 +14,7 @@
 
 ```bash
 # 1. 复制需要的模板到工作目录
-cp /home/ubuntu/local/flash/FLASH4.8/FLASH/FLASH4.8/.claude/skills/flash-setup-builder/examples/<file>.sh /tmp/
+cp /home/ubuntu/local/flash/FLASH4.8/FLASH/FLASH4.8/skills/flash-setup-builder/examples/<file>.sh /tmp/
 
 # 2. 按需修改（改算例名、objdir、parfile 等）
 vi /tmp/<file>.sh

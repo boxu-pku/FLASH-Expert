@@ -18,7 +18,7 @@
 ```bash
 cd /home/ubuntu/local/flash/FLASH4.8/FLASH/FLASH4.8
 # 改 setup-pm4dev.sh 里的 problem 名后
-bash .claude/skills/flash-grid/examples/setup-pm4dev.sh
+bash skills/flash-grid/examples/setup-pm4dev.sh
 ```
 
 或者手动复制 setup 命令段。

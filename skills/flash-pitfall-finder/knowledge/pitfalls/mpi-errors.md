@@ -91,7 +91,7 @@ HPC 集群常见，本机（ares 单机）少见。表现为：
 grep -B 2 "Driver_abortFlash\|MPI_ABORT" 01-data/<basenm>.log | head -20
 ```
 
-按 `[<routine>]:` 前缀查 `agent/pitfalls/` 或对应 skill 的 `knowledge/pitfalls.md`。
+按 `[<routine>]:` 前缀查 `skills/flash-pitfall-finder/knowledge/pitfalls/` 或对应 skill 的 `knowledge/pitfalls.md`。
 
 ### B. 死锁
 

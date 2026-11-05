@@ -14,6 +14,8 @@ source_anchors:
 ---
 
 # setup 阶段完整指南
+> 路径约定：`$FLASH_ROOT` = FLASH 4.8 仓库根目录（本机 `/home/ubuntu/local/flash/FLASH4.8/FLASH/FLASH4.8`）；`$FLASH_LIBS` = 外部库根目录（本机 `/home/ubuntu/local/flash/myFLASH4.8`，含 mpich/hdf5/hypre）。其它机器按实际路径替换。
+
 
 > 本文讲 FLASH 算例生命周期的**第一阶段**：setup。
 >
@@ -28,7 +30,7 @@ source_anchors:
 `./setup` 实际上是 `bin/setup.py` 的薄 wrapper：
 ```bash
 #!/bin/bash
-exec /home/ubuntu/local/flash/FLASH4.8/FLASH/FLASH4.8/bin/setup.py "$@"
+exec $FLASH_ROOT/bin/setup.py "$@"
 ```
 
 ### 1.2 setup 的端到端旅程（L-015）
@@ -262,7 +264,7 @@ setup 完成后，objdir 含：
 
 ```bash
 # 列所有算例
-ls /home/ubuntu/local/flash/FLASH4.8/FLASH/FLASH4.8/source/Simulation/SimulationMain/
+ls $FLASH_ROOT/source/Simulation/SimulationMain/
 
 # 看某算例的 Config（第一段注释通常说明用途）
 cat source/Simulation/SimulationMain/<算例>/Config | head -30
@@ -309,16 +311,16 @@ sites/
 
 **本机没有 `sites/ares/`**：
 ```bash
-ls /home/ubuntu/local/flash/FLASH4.8/FLASH/FLASH4.8/sites/
+ls $FLASH_ROOT/sites/
 # （可能不存在或不含 ares）
 ```
 
 **site 配置已 baked in 各 `cases/<case>/Makefile.h`**：
 ```bash
 cat cases/LaserSlab/Makefile.h | head -20
-# → MPI_PATH   = /home/ubuntu/local/flash/myFLASH4.8/mpich
-# → HDF5_PATH  = /home/ubuntu/local/flash/myFLASH4.8/hdf5
-# → HYPRE_PATH = /home/ubuntu/local/flash/myFLASH4.8/hypre
+# → MPI_PATH   = $FLASH_LIBS/mpich
+# → HDF5_PATH  = $FLASH_LIBS/hdf5
+# → HYPRE_PATH = $FLASH_LIBS/hypre
 # → FCOMP   = ${MPI_PATH}/bin/mpif90
 # → ...
 ```
@@ -365,9 +367,9 @@ cp /tmp/Makefile.h.bak cases/<case>/Makefile.h
 
 | 字段 | 含义 | 本机典型值 |
 |---|---|---|
-| `MPI_PATH` | MPI 库根路径 | `/home/ubuntu/local/flash/myFLASH4.8/mpich` |
-| `HDF5_PATH` | HDF5 库根路径 | `/home/ubuntu/local/flash/myFLASH4.8/hdf5` |
-| `HYPRE_PATH` | HYPRE 库根路径（MGD 用）| `/home/ubuntu/local/flash/myFLASH4.8/hypre` |
+| `MPI_PATH` | MPI 库根路径 | `$FLASH_LIBS/mpich` |
+| `HDF5_PATH` | HDF5 库根路径 | `$FLASH_LIBS/hdf5` |
+| `HYPRE_PATH` | HYPRE 库根路径（MGD 用）| `$FLASH_LIBS/hypre` |
 | `FCOMP` | Fortran 编译器 | `${MPI_PATH}/bin/mpif90` |
 | `CCOMP` | C 编译器 | `${MPI_PATH}/bin/mpicc` |
 | `LINK` | 链接器（通常 = FCOMP）| `${MPI_PATH}/bin/mpif90` |
@@ -401,7 +403,7 @@ cat setup_error.log | grep "Setup Variables\|Defined Setup"
 | setup-variable 没开（如要 laser 但没 +laser）| 看 setup_flags | 加 `+laser` |
 | Config 路径错（少见）| 看 `source/Simulation/SimulationMain/<算例>/Config` | 改 Config |
 
-**详细**：见 `agent/pitfalls/setup-unit-not-found.md`。
+**详细**：见 `skills/flash-pitfall-finder/knowledge/pitfalls/setup-unit-not-found.md`。
 
 ### 5.2 site not found
 
@@ -418,7 +420,7 @@ ls sites/ 2>/dev/null || echo "sites/ 不存在"
 
 **修复**：见本文 §4.4——从 cases/LaserSlab 复制 Makefile.h 到 `sites/<hostname>/`。
 
-**详细**：见 `agent/pitfalls/site-not-found.md`。
+**详细**：见 `skills/flash-pitfall-finder/knowledge/pitfalls/site-not-found.md`。
 
 ### 5.3 species 数量错
 

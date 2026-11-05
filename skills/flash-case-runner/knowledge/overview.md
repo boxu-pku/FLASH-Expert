@@ -11,6 +11,8 @@ source_anchors:
 ---
 
 # FLASH 算例生命周期总览
+> 路径约定：`$FLASH_ROOT` = FLASH 4.8 仓库根目录（本机 `/home/ubuntu/local/flash/FLASH4.8/FLASH/FLASH4.8`）；`$FLASH_LIBS` = 外部库根目录（本机 `/home/ubuntu/local/flash/myFLASH4.8`，含 mpich/hdf5/hypre）。其它机器按实际路径替换。
+
 
 > 本文是 flash-case-runner skill 的**入口文档**。用户问"怎么跑 X" / "FLASH 算例怎么开始"时，先读这里建立心智模型（L-015 先讲完整故事线）。
 >
@@ -132,7 +134,7 @@ sudo mv /lib/x86_64-linux-gnu/libmpi.so.40.bak /lib/x86_64-linux-gnu/libmpi.so.4
 ```bash
 cd cases/LaserSlab
 mkdir -p 01-data && cd 01-data
-source /home/ubuntu/local/flash/FLASH4.8/FLASH/FLASH4.8/flash_env.sh
+source $FLASH_ROOT/flash_env.sh
 mpirun -np 2 ../flash4 -par_file ../flash.par 2>&1 | tee flash.log
 ```
 
@@ -176,7 +178,7 @@ mpirun -np 2 ../flash4 -par_file ../flash.par 2>&1 | tee flash.log
    mpirun -np N ../flash4 -par_file ../flash.par
 ```
 
-**关键陷阱**：NXB/NYB/nDim/species 数必须和原算例一致（编译期 baked in），否则 abort。详见 `agent/pitfalls/restart-incompatibility.md`。
+**关键陷阱**：NXB/NYB/nDim/species 数必须和原算例一致（编译期 baked in），否则 abort。详见 `skills/flash-pitfall-finder/knowledge/pitfalls/restart-incompatibility.md`。
 
 ## 3. 常见算例一览（按 L-013 聚焦主流）
 
@@ -247,7 +249,7 @@ FLASH 源码里 `source/Simulation/SimulationMain/` 下有 30+ 个算例。本�
 
 **怎么浏览所有算例**：
 ```bash
-ls /home/ubuntu/local/flash/FLASH4.8/FLASH/FLASH4.8/source/Simulation/SimulationMain/
+ls $FLASH_ROOT/source/Simulation/SimulationMain/
 ```
 
 每个算例的 Config 文件第一段注释通常说明用途。
@@ -272,11 +274,11 @@ ls /home/ubuntu/local/flash/FLASH4.8/FLASH/FLASH4.8/source/Simulation/Simulation
 
 **运行期**：source `flash_env.sh` 设 LD_PRELOAD，让 mpich 的 libmpi 最先加载。
 
-**详细**：见 `agent/pitfalls/libmpi-conflict.md` + 本 skill `knowledge/make_guide.md §3` + `knowledge/run_guide.md §3`。
+**详细**：见 `skills/flash-pitfall-finder/knowledge/pitfalls/libmpi-conflict.md` + 本 skill `knowledge/make_guide.md §3` + `knowledge/run_guide.md §3`。
 
 ### 4.3 外部库路径
 
-本机外部库在 `/home/ubuntu/local/flash/myFLASH4.8/`：
+本机外部库在 `$FLASH_LIBS/`：
 - `mpich/` — MPI 实现
 - `hdf5/` — HDF5 库（plotfile/chk 格式）
 - `hypre/` — HYPRE 库（MGD 求解器用）
@@ -329,5 +331,5 @@ grep -i "mpi\|sigsegv" cases/<case>/01-data/flash.log | head -20
 grep -E "nstep|simTime" cases/<case>/01-data/flash.log | tail -30
 
 # source 运行环境
-source /home/ubuntu/local/flash/FLASH4.8/FLASH/FLASH4.8/flash_env.sh
+source $FLASH_ROOT/flash_env.sh
 ```

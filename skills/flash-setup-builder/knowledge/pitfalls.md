@@ -153,7 +153,7 @@ cp /home/ubuntu/local/flash/FLASH4.8/FLASH/FLASH4.8/cases/LaserSlab/Makefile.h \
 
 **本机特殊性**：site 配置已 baked in 各 `cases/<case>/Makefile.h`（用户从其他机器拷贝 cases 时 Makefile.h 跟着过来）。但新 setup 时如果 `sites/ares/` 不存在，setup.py 会报错。
 
-详见 `agent/pitfalls/site-not-found.md`（如存在）和 `flash-case-runner/knowledge/setup_guide.md` §4。
+详见 `skills/flash-pitfall-finder/knowledge/pitfalls/site-not-found.md`（如存在）和 `flash-case-runner/knowledge/setup_guide.md` §4。
 
 ---
 
@@ -462,7 +462,7 @@ setup 报错
 │  └─→ 看 §7（Makefile.h 路径错 / 库没装 / 编译器错）
 │
 └─ 其他
-   └─→ 看 §8（边缘错误速查）+ agent/pitfalls/
+   └─→ 看 §8（边缘错误速查）+ skills/flash-pitfall-finder/knowledge/pitfalls/
 ```
 
 如果本 skill 知识库未覆盖你的错误，建议：

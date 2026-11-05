@@ -33,7 +33,7 @@ tags:
 
 > **TL;DR**：Grid 是 FLASH 最大最复杂的基础设施单元。4 个子单元（GridMain、GridParticles、GridBoundaryConditions、GridSolvers）；3 个互斥后端（PARAMESH4dev AMR 默认、UG 均匀网格、Chombo 补丁 AMR）；核心数据结构 `unk(NUNK_VARS, nxb, nyb, nzb, blocks)` 和 `facevarx/y/z`；Löhner 二阶导数细化判据；6 种 Poisson 求解器。
 
-> **互补性声明**：本条目补充 `.claude/skills/flash-grid/knowledge/`，侧重手册 §8 的整体结构和 API 参照，而非内部实现细节。
+> **互补性声明**：本条目补充 `skills/flash-grid/knowledge/`，侧重手册 §8 的整体结构和 API 参照，而非内部实现细节。
 
 ## 1. 子单元结构
 
@@ -229,7 +229,7 @@ HYPRE 是 MGD 辐射扩散和隐式热传导的必需求解器。支持：
 
 ## 10. 延伸阅读
 
-- 本技能知识：`.claude/skills/flash-grid/knowledge/` 含 backend 差异、AMR 策略、guard cell 策略等技术细节
+- 本技能知识：`skills/flash-grid/knowledge/` 含 backend 差异、AMR 策略、guard cell 策略等技术细节
 - §6 Flash.h File：变量索引如何生成
 - §9 IO Unit：plotfile/checkpoint 中网格数据输出
 - §14 3T HEDP Capabilities：MGD + HYPRE 耦合

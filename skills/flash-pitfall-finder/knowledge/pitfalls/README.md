@@ -1,4 +1,4 @@
-# agent/pitfalls/ — 跨领域踩坑库
+# skills/flash-pitfall-finder/knowledge/pitfalls/ — 跨领域踩坑库
 
 存放**不属于任何单一单元**的踩坑条目。每条按"错误信息 → 原因 → 修复 → 预防"四段式组织。
 
@@ -28,12 +28,12 @@
 
 | 类型 | 位置 | 内容 |
 |---|---|---|
-| **跨领域踩坑**（本目录） | `agent/pitfalls/` | 编译、链接、setup、MPI、本机特定、数值通用问题 |
-| **单元内踩坑** | `.claude/skills/flash-<unit>/knowledge/pitfalls.md` | 该单元特定的 abort、参数陷阱、概念错误 |
+| **跨领域踩坑**（本目录） | `skills/flash-pitfall-finder/knowledge/pitfalls/` | 编译、链接、setup、MPI、本机特定、数值通用问题 |
+| **单元内踩坑** | `skills/flash-<unit>/knowledge/pitfalls.md` | 该单元特定的 abort、参数陷阱、概念错误 |
 
 `flash-pitfall-finder` skill 会**同时搜两处**：
 ```bash
-rg -i '<关键词>' agent/pitfalls/ .claude/skills/*/knowledge/pitfalls.md
+rg -i '<关键词>' skills/flash-pitfall-finder/knowledge/pitfalls/ skills/*/knowledge/pitfalls.md
 ```
 
 ## 单元内踩坑库现状

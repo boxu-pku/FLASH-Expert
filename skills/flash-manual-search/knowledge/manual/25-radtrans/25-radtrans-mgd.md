@@ -191,7 +191,7 @@ PLANCK 平均 / Rosseland 平均选择：由 Opacity 单元的运行时参数控
 
 ## 9. 延伸阅读
 
-- 本技能：`.claude/skills/flash-radtrans/knowledge/`
+- 本技能：`skills/flash-radtrans/knowledge/`
 - §14 3T HEDP Capabilities：MGD 在多温系统中的角色
 - §19.1.2 通用隐式扩散求解器
 - §19.1.3 通量限制器选项

@@ -167,6 +167,8 @@ owner: user
 ---
 
 # flash-case-runner — FLASH 算例操作专家（setup → make → run → restart）
+> 路径约定：`$FLASH_ROOT` = FLASH 4.8 仓库根目录（本机 `/home/ubuntu/local/flash/FLASH4.8/FLASH/FLASH4.8`）；`$FLASH_LIBS` = 外部库根目录（本机 `/home/ubuntu/local/flash/myFLASH4.8`，含 mpich/hdf5/hypre）。其它机器按实际路径替换。
+
 
 > **状态**：beta（Phase 3 第一个操作层 skill；2026-08-02 LaserSlab 实战验证通过 libmpi 冲突解决方案）
 >
@@ -227,10 +229,10 @@ owner: user
 - **运行输出隔离（硬约束，2026-08-10 起）**：运行 flash4 一律在 **`cases/<case>/01-data/`** 目录下启动（CWD=01-data），所有运行输出（plotfile / checkpoint / .dat / .log）只落在 `01-data/`；objdir 根目录只放编译产物（flash4 / *.o / Makefile / setup_*）和 parfile，**禁止**在 objdir 根目录直接 `mpirun ./flash4` 让输出散落。标准姿势：
   ```bash
   mkdir -p cases/<case>/01-data && cd cases/<case>/01-data
-  source /home/ubuntu/local/flash/FLASH4.8/FLASH/FLASH4.8/flash_env.sh
+  source $FLASH_ROOT/flash_env.sh
   mpirun -np N ../flash4 -par_file ../flash.par 2>&1 | tee flash.log
   ```
-  为什么用 CWD 法而不用 parfile 的 `output_directory` 参数：`output_directory` 只管 plt/chk（`source/IO/IOMain/io_getOutputName.F90`），`.log` / `.dat`（如 `*_LaserEnergyProfile.dat`）仍写 CWD——CWD 法一刀切全覆盖。restart 续跑也在同一 `01-data/` 里跑（chk 就在本目录，用 `checkpointFileNumber` 指定编号；**必须同时设 `plotFileNumber`** 否则新 plt 从 0 重编号覆盖旧文件，见 `agent/pitfalls/restart-plotfilenumber-overwrite.md`）
+  为什么用 CWD 法而不用 parfile 的 `output_directory` 参数：`output_directory` 只管 plt/chk（`source/IO/IOMain/io_getOutputName.F90`），`.log` / `.dat`（如 `*_LaserEnergyProfile.dat`）仍写 CWD——CWD 法一刀切全覆盖。restart 续跑也在同一 `01-data/` 里跑（chk 就在本目录，用 `checkpointFileNumber` 指定编号；**必须同时设 `plotFileNumber`** 否则新 plt 从 0 重编号覆盖旧文件，见 `skills/flash-pitfall-finder/knowledge/pitfalls/restart-plotfilenumber-overwrite.md`）
 - **讲逻辑**（L-001）：不只是给命令模板，讲清楚"为什么这么操作"、"不这么做会怎样"
 - **不用 mermaid**（L-002）：流程图用文字+缩进
 - **核心 4 段 + 引导项**（L-010）：核心段（setup/make/run 命令）必给详细，引导项（背景原理）按需展开
@@ -277,7 +279,7 @@ owner: user
 **Sedov 是入门算例**——纯 Hydro、单物质、无激光/MGD/3T，最适合验证"环境配通没"。**完整命令**：
 
 ```bash
-cd /home/ubuntu/local/flash/FLASH4.8/FLASH/FLASH4.8
+cd $FLASH_ROOT
 ./setup Sedov -auto -objdir=cases/Sedov
 cd cases/Sedov && make -j4
 mkdir -p 01-data && cd 01-data
@@ -331,7 +333,7 @@ mpirun -np 2 ../flash4 -par_file ../flash.par 2>&1 | tee flash.log
 
 ### Q3: 编译 LaserSlab 时报 `libmpi.so.40 may conflict with libmpi.so.12` 怎么办？
 
-**A**: 见 `knowledge/make_guide.md §3` + `agent/pitfalls/libmpi-conflict.md`。**按 L-012 先确认现场**：
+**A**: 见 `knowledge/make_guide.md §3` + `skills/flash-pitfall-finder/knowledge/pitfalls/libmpi-conflict.md`。**按 L-012 先确认现场**：
 
 ```bash
 # 1. 确认这是 warning 还是 error（warning 可忽略，error 要修）
@@ -339,7 +341,7 @@ grep -A2 "libmpi" cases/<your_case>/make.log | head -10
 
 # 2. 确认 Makefile.h 用的 MPI_PATH
 grep MPI_PATH cases/<your_case>/Makefile.h
-# 应该是 /home/ubuntu/local/flash/myFLASH4.8/mpich
+# 应该是 $FLASH_LIBS/mpich
 ```
 
 **机制解释（L-008：非源码错，不贴"凑数代码"）**：
@@ -404,7 +406,7 @@ grep -i "block\|leaf" cases/<your_case>/01-data/flash.log | tail -10
 ```
 
 **关键陷阱**：
-- **NXB 不一致会 abort**——见 `agent/pitfalls/restart-incompatibility.md`。续跑前 grep `setup_flags` 确认 NXB
+- **NXB 不一致会 abort**——见 `skills/flash-pitfall-finder/knowledge/pitfalls/restart-incompatibility.md`。续跑前 grep `setup_flags` 确认 NXB
 - **物种数变了也不能续跑**（species 数 baked in 编译期）
 - **parfile 顶部 setup 注释可能误导**（L-009）——以 setup_call 为准
 
@@ -423,12 +425,12 @@ grep -i "block\|leaf" cases/<your_case>/01-data/flash.log | tail -10
 | 本机 site 配置（已 baked in） | `cases/LaserSlab/Makefile.h`（无 sites/ares/）|
 | 运行环境脚本 | `flash_env.sh`（项目根）|
 | 运行输出目录（§2 硬约束） | `cases/<case>/01-data/`——plt/chk/dat/log 全在这；objdir 根目录只放编译产物 + parfile |
-| libmpi 冲突详细 | `agent/pitfalls/libmpi-conflict.md` |
-| MPI 运行时错误 | `agent/pitfalls/mpi-errors.md` |
-| restart 不兼容 | `agent/pitfalls/restart-incompatibility.md` |
-| setup Unit not found | `agent/pitfalls/setup-unit-not-found.md` |
-| site not found | `agent/pitfalls/site-not-found.md` |
-| -ffpe-trap 触发 NaN | `agent/pitfalls/ffpe-trap-and-nan.md` |
+| libmpi 冲突详细 | `skills/flash-pitfall-finder/knowledge/pitfalls/libmpi-conflict.md` |
+| MPI 运行时错误 | `skills/flash-pitfall-finder/knowledge/pitfalls/mpi-errors.md` |
+| restart 不兼容 | `skills/flash-pitfall-finder/knowledge/pitfalls/restart-incompatibility.md` |
+| setup Unit not found | `skills/flash-pitfall-finder/knowledge/pitfalls/setup-unit-not-found.md` |
+| site not found | `skills/flash-pitfall-finder/knowledge/pitfalls/site-not-found.md` |
+| -ffpe-trap 触发 NaN | `skills/flash-pitfall-finder/knowledge/pitfalls/ffpe-trap-and-nan.md` |
 | Driver 主循环（abort 出处） | `source/Driver/DriverMain/Driver_evolveFlash.F90` |
 | Driver_abortFlash | `source/Driver/DriverMain/Driver_abortFlash.F90` |
 | IO_output（写 plotfile/chk） | `source/IO/IOMain/<...>/IO_output.F90` |
@@ -460,10 +462,10 @@ grep -i "block\|leaf" cases/<your_case>/01-data/flash.log | tail -10
 | 2026-08-02 | **升级 draft → beta**（Phase 3 第一个操作层 skill）：基于 2026-08-02 LaserSlab 4.8 实战验证（libmpi LD_PRELOAD 方案 + 66 步跑通），按 L-001~L-015 全部经验写完 SKILL.md + 5 knowledge + 3 recipes + 4 examples；核心设计——用 knowledge 而不是 Python 工具脚本（Claude 直接执行 bash 更灵活）；按 L-013 聚焦 LaserSlab（用户实际场景）+ Sedov（入门）+ Sunliang（多物质自定义）；按 L-014 解释 setup/make/objdir/site/parfile/checkpoint 等术语；按 L-015 setup→make→run→看结果四步流程先讲故事线；按 L-012 编译/运行错误先引导贴现场；libmpi 冲突编译期 + 运行期两套方案都有 | claude |
 | 2026-08-07 | **CarbonSlab 实战经验沉淀**（自建 LaserSlab 变体 + IONMIX 表接入）：pitfalls.md 新增 §3.5.1（`ed_setupBeams` invalid 2D/3D beam grid type——flash.par 是 3D 版 + `ed_gridType` 必须与 `ed_laser3Din2D` 配套，源码 ed_setupBeams.F90:118-132）、§3.5.2（IONMIX 表群数/群边界硬校验 abort）、§3.8.1（`opacity_writeOpacityInfo` 触发 `op_writeOpacity.F90:97` 段错误——FLASH bug，但表打印文件先完成仍可用于验证）；recipes/laser-slab-2d.md 新增 §4.8-4.10（光束类型修复、IONMIX 表接入五步操作 + 三一致性要求、三级验证法含逐值对比结果 PA/RO ~5e-7） | claude |
 | 2026-08-10 | **新增运行输出隔离硬约束**（§2 第一条）：运行 flash4 一律在 `cases/<case>/01-data/` 下启动（CWD 法），plt/chk/dat/log 只落 01-data，objdir 根目录只留编译产物 + parfile；源码依据——`output_directory` 参数只管 plt/chk（io_getOutputName.F90），.log/.dat 仍写 CWD，故用 CWD 法一刀切。同步改 SKILL.md Q1/Q2/Q4/Q5 + §5 表、run_guide.md 全部运行/日志/restart 命令、overview.md 术语表 + 阶段 3/4 + 速查、3 个 recipes、run-sedov.sh / run-laser-slab.sh 脚本、pitfalls.md 日志路径；flash-result-analyzer 原本就是 `cases/<case>/01-data/` 约定，无需改 | claude |
-| 2026-08-10 | **Sunliang_Xray MPI 崩溃排查沉淀**：新建 `agent/pitfalls/mpi-romio-null-comm-allreduce.md` + pitfalls.md 新增 §3.1.1——`internal_Allreduce ... op=0x98000000, MPI_COMM_NULL`（step 8041/2.5h 长跑后）根因锁定 ROMIO（MPI-IO）two-phase 集合写 consensus Allreduce；证据链：5 行 C 程序逐字复现错误指纹、handle 解码（0x98000000=首个用户 op）、objdir 全部 Allreduce 穷举（Fortran 全是 MPI_INTEGER，与指纹 MPI_INT 不符）、反汇编（仅 ROMIO 创建用户 op，HYPRE/HDF5 为 0）、沙箱 restart 越过崩溃点（非确定性）；触发条件=每步一个 plotfile 的极端集合 IO 频率；修复=restart 续跑 + 降 IO 频率 + ROMIO_CB_WRITE=disable | claude |
-| 2026-08-10 | **restart 三件套纠正（Sunliang_Xray 续跑实战，跑到 tmax=20ns 完成）**：① ~~`restartFile`~~ 不是 FLASH 4.8 有效参数（报 ignoring unknown parameter），续跑靠 `checkpointFileNumber`；② **必须设 `plotFileNumber`**——parfile 显式值覆盖 chk 计数器，不设则新 plt 从 0 重编号静默覆盖旧文件（本次损失原 plt 0000-0069 共 70 个早期文件后发现并纠正）；新建 `agent/pitfalls/restart-plotfilenumber-overwrite.md`；全库 11 处 `restartFile` 错误写法全部修正（SKILL.md Q5 + §2、run_guide.md §5.3/5.4/5.6/§7、overview.md 阶段 4、pitfalls.md §4.3 重写 + 索引表） | claude |
-| 2026-08-10 | **restart 空壳 plotfile 发现（可视化实战）**：restart 后定时 plotfile 只有 AMR 元数据、无物理场数据集（~0.2MB vs 正常 4.7MB，日志却显示 wrote N blocks）——forced plotfile 和 checkpoint 正常；新建 `agent/pitfalls/restart-skeleton-plotfiles.md`，case-runner/result-analyzer pitfalls 索引均登记；可视化脚本 `make_figures.py`（figs/）已内置空壳过滤 | claude |
-| 2026-08-10 | **IO 频率建议落地 + 经验沉淀**：`plotFileIntervalTime` 0.01e-09 → 0.1e-09（源模板 example_xray.par + objdir flash.par，后者同时复位 restart=.false. 安全态）；新建 `agent/pitfalls/plotfile-interval-too-dense.md`；pitfalls.md 新增 §5.4 + 索引表 2 行；`agent/pitfalls/README.md` 清单加 3 条；`agent/LESSONS_LEARNED.md` 新增 L-018（restart 三件套）/ L-019（IO 频率按物理时间分辨率设）/ L-020（MPI 崩溃取证方法论） | claude |
+| 2026-08-10 | **Sunliang_Xray MPI 崩溃排查沉淀**：新建 `skills/flash-pitfall-finder/knowledge/pitfalls/mpi-romio-null-comm-allreduce.md` + pitfalls.md 新增 §3.1.1——`internal_Allreduce ... op=0x98000000, MPI_COMM_NULL`（step 8041/2.5h 长跑后）根因锁定 ROMIO（MPI-IO）two-phase 集合写 consensus Allreduce；证据链：5 行 C 程序逐字复现错误指纹、handle 解码（0x98000000=首个用户 op）、objdir 全部 Allreduce 穷举（Fortran 全是 MPI_INTEGER，与指纹 MPI_INT 不符）、反汇编（仅 ROMIO 创建用户 op，HYPRE/HDF5 为 0）、沙箱 restart 越过崩溃点（非确定性）；触发条件=每步一个 plotfile 的极端集合 IO 频率；修复=restart 续跑 + 降 IO 频率 + ROMIO_CB_WRITE=disable | claude |
+| 2026-08-10 | **restart 三件套纠正（Sunliang_Xray 续跑实战，跑到 tmax=20ns 完成）**：① ~~`restartFile`~~ 不是 FLASH 4.8 有效参数（报 ignoring unknown parameter），续跑靠 `checkpointFileNumber`；② **必须设 `plotFileNumber`**——parfile 显式值覆盖 chk 计数器，不设则新 plt 从 0 重编号静默覆盖旧文件（本次损失原 plt 0000-0069 共 70 个早期文件后发现并纠正）；新建 `skills/flash-pitfall-finder/knowledge/pitfalls/restart-plotfilenumber-overwrite.md`；全库 11 处 `restartFile` 错误写法全部修正（SKILL.md Q5 + §2、run_guide.md §5.3/5.4/5.6/§7、overview.md 阶段 4、pitfalls.md §4.3 重写 + 索引表） | claude |
+| 2026-08-10 | **restart 空壳 plotfile 发现（可视化实战）**：restart 后定时 plotfile 只有 AMR 元数据、无物理场数据集（~0.2MB vs 正常 4.7MB，日志却显示 wrote N blocks）——forced plotfile 和 checkpoint 正常；新建 `skills/flash-pitfall-finder/knowledge/pitfalls/restart-skeleton-plotfiles.md`，case-runner/result-analyzer pitfalls 索引均登记；可视化脚本 `make_figures.py`（figs/）已内置空壳过滤 | claude |
+| 2026-08-10 | **IO 频率建议落地 + 经验沉淀**：`plotFileIntervalTime` 0.01e-09 → 0.1e-09（源模板 example_xray.par + objdir flash.par，后者同时复位 restart=.false. 安全态）；新建 `skills/flash-pitfall-finder/knowledge/pitfalls/plotfile-interval-too-dense.md`；pitfalls.md 新增 §5.4 + 索引表 2 行；`skills/flash-pitfall-finder/knowledge/pitfalls/README.md` 清单加 3 条；`agent/LESSONS_LEARNED.md` 新增 L-018（restart 三件套）/ L-019（IO 频率按物理时间分辨率设）/ L-020（MPI 崩溃取证方法论） | claude |
 | 2026-08-13 | **side-on 崩溃根因修复（DEBUG 构建 + bounds-check + gdb 实证）**：错误链 XrayImaging→xray_updateXrays→Grid_moveParticles→gr_ptMoveOffBlk→gr_findNeghID→Grid_getBlkBoundBox（blkHandle=32766 垃圾值越界）；根因=NONEXISTENT 邻块分支未遵守 gr_getBlkHandle 哨兵契约 + level-1 块无父块；修复=gr_findNeghID 双保险（返回 NONEXISTENT 走 gr_findBlock 重定位）+ xray_updateXrays 清扫兜底；三个曾崩例（6.1/16.6/17ns）全过；全时刻 side-on 重放 7 帧产出（xray_sideon_real_series.png），与密度提取曲线互证一致；残留 1.7-6.8% 像素缺失（搬迁静默丢光，最近值插值）。经验：-debug 构建要 -fallow-argument-mismatch + 去 -ffpe-trap + make clean | claude |
-| 2026-08-11 | **X 光动态照相（side-on）实战**：发现 3Din2D 重构空间柱轴=Z（非 Y！域校验代码 xray_detectorsCheck2DCyl3D.F90 实证）；side-on 验证配置 normal=(-1,0,0)+center=(0.1,0,0.0535) 出图正常（t=0/1/3ns），但**演化态（≥6ns）确定性崩溃**（xray_updateXrays.F90:126 Grid_sortParticles double free，分辨率/线程 workaround 无效）；最终交付=合成辐射照相（plotfile 弦积分 + t=0 真机帧定标 κ_CH=10.6/κ_CHBr=60，逐位吻合）+ 壳层位置曲线 shell_position_vs_time.png（856→513μm）；新建 `agent/pitfalls/xray-sideon-crash-sortparticles.md` | claude |
-| 2026-08-11 | **`-parfile=` 静默忽略纠正（X 光重放验证跑抓出）**：源码实证 flash4 只认 `-par_file X`（RuntimeParameters_init.F90:86-89，`rp_getOpt` 精确匹配 + 值取下一 argv），`-parfile=X`/`-parfile X` 均静默回退默认 flash.par——以前没炸是因为文件名恰好都是 flash.par；新建 `agent/pitfalls/parfile-flag-ignored.md`；全库 62 处修正（CLAUDE.md + case-runner 40 处 + laser/driver/setup-builder/multispecies 22 处），**setup 的 `-parfile=` 不动**（setup.py 吃等号形式）。附带成果：新建 cases/Sunliang_Xray_xray8 二进制（xray_maxDetectors=8）并验证 restart 后 X 光按时刻正常记录 | claude |
+| 2026-08-11 | **X 光动态照相（side-on）实战**：发现 3Din2D 重构空间柱轴=Z（非 Y！域校验代码 xray_detectorsCheck2DCyl3D.F90 实证）；side-on 验证配置 normal=(-1,0,0)+center=(0.1,0,0.0535) 出图正常（t=0/1/3ns），但**演化态（≥6ns）确定性崩溃**（xray_updateXrays.F90:126 Grid_sortParticles double free，分辨率/线程 workaround 无效）；最终交付=合成辐射照相（plotfile 弦积分 + t=0 真机帧定标 κ_CH=10.6/κ_CHBr=60，逐位吻合）+ 壳层位置曲线 shell_position_vs_time.png（856→513μm）；新建 `skills/flash-pitfall-finder/knowledge/pitfalls/xray-sideon-crash-sortparticles.md` | claude |
+| 2026-08-11 | **`-parfile=` 静默忽略纠正（X 光重放验证跑抓出）**：源码实证 flash4 只认 `-par_file X`（RuntimeParameters_init.F90:86-89，`rp_getOpt` 精确匹配 + 值取下一 argv），`-parfile=X`/`-parfile X` 均静默回退默认 flash.par——以前没炸是因为文件名恰好都是 flash.par；新建 `skills/flash-pitfall-finder/knowledge/pitfalls/parfile-flag-ignored.md`；全库 62 处修正（CLAUDE.md + case-runner 40 处 + laser/driver/setup-builder/multispecies 22 处），**setup 的 `-parfile=` 不动**（setup.py 吃等号形式）。附带成果：新建 cases/Sunliang_Xray_xray8 二进制（xray_maxDetectors=8）并验证 restart 后 X 光按时刻正常记录 | claude |

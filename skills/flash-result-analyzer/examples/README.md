@@ -31,7 +31,7 @@ conda install -c conda-forge yt
 
 ```bash
 # 在 FLASH 项目根目录
-python .claude/skills/flash-result-analyzer/examples/check_energy.py cases/LaserSlab/01-data
+python skills/flash-result-analyzer/examples/check_energy.py cases/LaserSlab/01-data
 ```
 
 输出示例：
@@ -59,11 +59,11 @@ python .claude/skills/flash-result-analyzer/examples/check_energy.py cases/Laser
 
 ```bash
 # 单 plotfile
-python .claude/skills/flash-result-analyzer/examples/plot_quick.py \
+python skills/flash-result-analyzer/examples/plot_quick.py \
   cases/LaserSlab/01-data/lasslab_hdf5_plt_cnt_0050
 
 # plotfile 序列（画时间演化）
-python .claude/skills/flash-result-analyzer/examples/plot_quick.py \
+python skills/flash-result-analyzer/examples/plot_quick.py \
   cases/LaserSlab/01-data -seq
 ```
 
@@ -72,7 +72,7 @@ python .claude/skills/flash-result-analyzer/examples/plot_quick.py \
 ### 3. 激光吸收率
 
 ```bash
-python .claude/skills/flash-result-analyzer/examples/laser_coupling.py \
+python skills/flash-result-analyzer/examples/laser_coupling.py \
   cases/LaserSlab/01-data/lasslab_LaserEnergyProfile.dat --plot
 ```
 
@@ -82,18 +82,18 @@ python .claude/skills/flash-result-analyzer/examples/laser_coupling.py \
 
 ```bash
 # Step 1: 跑完算例后先看能量守恒
-python .claude/skills/flash-result-analyzer/examples/check_energy.py cases/LaserSlab/01-data
+python skills/flash-result-analyzer/examples/check_energy.py cases/LaserSlab/01-data
 
 # Step 2: 看激光吸收率（仅激光算例）
-python .claude/skills/flash-result-analyzer/examples/laser_coupling.py \
+python skills/flash-result-analyzer/examples/laser_coupling.py \
   cases/LaserSlab/01-data/lasslab_LaserEnergyProfile.dat --plot
 
 # Step 3: 画图看物理形态
-python .claude/skills/flash-result-analyzer/examples/plot_quick.py \
+python skills/flash-result-analyzer/examples/plot_quick.py \
   cases/LaserSlab/01-data/lasslab_hdf5_plt_cnt_0050
 
 # Step 4: 序列画图做 GIF
-python .claude/skills/flash-result-analyzer/examples/plot_quick.py \
+python skills/flash-result-analyzer/examples/plot_quick.py \
   cases/LaserSlab/01-data -seq
 
 # 用 imageio 做 GIF

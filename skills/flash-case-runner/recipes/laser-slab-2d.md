@@ -204,7 +204,7 @@ grep -i "nan\|below floor" flash.log | head
 
 **用 examples/flash_log_parser.sh 自动解析**：
 ```bash
-bash /home/ubuntu/local/flash/FLASH4.8/FLASH/FLASH4.8/.claude/skills/flash-case-runner/examples/flash_log_parser.sh cases/LaserSlab/01-data/flash.log
+bash /home/ubuntu/local/flash/FLASH4.8/FLASH/FLASH4.8/skills/flash-case-runner/examples/flash_log_parser.sh cases/LaserSlab/01-data/flash.log
 ```
 
 ## 3. LaserSlab parfile 关键参数
@@ -266,7 +266,7 @@ basenm = "LaserSlab"
 - 编译期：sudo mv libmpi.so.40（步骤 3 已做）
 - 运行期：source flash_env.sh（步骤 4 已做）
 
-**详细**：见 `knowledge/make_guide.md §3` + `agent/pitfalls/libmpi-conflict.md`。
+**详细**：见 `knowledge/make_guide.md §3` + `skills/flash-pitfall-finder/knowledge/pitfalls/libmpi-conflict.md`。
 
 ### 4.2 example.par 顶部 setup 注释错（L-009）
 
@@ -415,7 +415,7 @@ RO 表: 1200 个值, 最大 |log10差| = 4.999e-07
 
 见 `examples/run-laser-slab.sh`：
 ```bash
-bash /home/ubuntu/local/flash/FLASH4.8/FLASH/FLASH4.8/.claude/skills/flash-case-runner/examples/run-laser-slab.sh
+bash /home/ubuntu/local/flash/FLASH4.8/FLASH/FLASH4.8/skills/flash-case-runner/examples/run-laser-slab.sh
 ```
 
 ## 6. 验证标准（2026-08-02 实战）

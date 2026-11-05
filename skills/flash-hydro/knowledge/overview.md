@@ -443,8 +443,8 @@ c_s 是声速（MHD 用 fast magnetosonic speed）。每个 cell 算一个 dt，
 - **CTU 流程详解**：`knowledge/internals.md`
 - **典型配置**：`knowledge/recipes.md`
 - **常见错误**：`knowledge/pitfalls.md`
-- **Grid 单元**：`.claude/skills/flash-grid/knowledge/overview.md`
-- **Driver 主循环**：`.claude/skills/flash-driver/knowledge/internals.md`
+- **Grid 单元**：`skills/flash-grid/knowledge/overview.md`
+- **Driver 主循环**：`skills/flash-driver/knowledge/internals.md`
 - **手册章节**：FLASH 4.8 User Guide §9-12（opencode 转写中）
 
 ---

@@ -142,7 +142,7 @@ xray_printMain      = .true.
 ## 可视化
 
 ```bash
-python .claude/skills/flash-result-analyzer/examples/flash_plot_all.py \
+python skills/flash-result-analyzer/examples/flash_plot_all.py \
     <case>/01-data/<basenm>_XrayDetectorFile01 --xray
 ```
 

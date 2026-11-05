@@ -12,7 +12,7 @@ tags:
   - flash4
   - 静默失败
 related:
-  - agent/pitfalls/restart-plotfilenumber-overwrite.md
+  - skills/flash-pitfall-finder/knowledge/pitfalls/restart-plotfilenumber-overwrite.md
 ---
 
 # flash4 的 `-parfile=X` 被静默忽略

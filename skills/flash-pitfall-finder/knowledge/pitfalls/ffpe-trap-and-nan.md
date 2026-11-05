@@ -100,7 +100,7 @@ for var in ["dens", "tele", "tion", "trad", "pres", "depo"]:
 #### A. 除零（最常见）
 ```bash
 # 搜源码找潜在除零（除法 + 可能零的分母）
-rg "gaussianRadius|targetSemiAxis|aspectRatio.*=" .claude/skills/flash-laser/
+rg "gaussianRadius|targetSemiAxis|aspectRatio.*=" skills/flash-laser/
 ```
 
 parfile 检查：

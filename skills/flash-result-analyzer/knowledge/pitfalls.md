@@ -70,7 +70,7 @@ python -c "import yt; print(yt.__version__)"
 | `IndexError: list index out of range` | 目录 vs 单文件混淆 | yt 一般要目录，看 §1.2 |
 | `KeyError: 'DENS'` | 字段名错（大小写）| yt 用 lowercase `'dens'` |
 | `AttributeError: 'Dataset' object has no attribute 'current_time'` | FLASH 老版本 plotfile | yt 4.0+ 或手动读 time |
-| `KeyError: "object 'dens' doesn't exist"`（2026-08-10 实证） | **restart 后定时 plotfile 是空壳**——只有 AMR 元数据无物理场；文件 ~0.2MB vs 正常 ~4.7MB，日志却显示 wrote N blocks | 用 checkpoint 或 forced plotfile 替代；详见 `agent/pitfalls/restart-skeleton-plotfiles.md` |
+| `KeyError: "object 'dens' doesn't exist"`（2026-08-10 实证） | **restart 后定时 plotfile 是空壳**——只有 AMR 元数据无物理场；文件 ~0.2MB vs 正常 ~4.7MB，日志却显示 wrote N blocks | 用 checkpoint 或 forced plotfile 替代；详见 `skills/flash-pitfall-finder/knowledge/pitfalls/restart-skeleton-plotfiles.md` |
 
 ### 1.2 plotfile 是目录还是单文件（陷阱）
 

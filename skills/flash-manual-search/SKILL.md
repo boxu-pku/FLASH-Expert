@@ -1,7 +1,7 @@
 ---
 name: flash-manual-search
 description: |
-  FLASH 官方用户手册检索工具。在已转换的 agent/manual/<chapter>.md 中按关键词检索，
+  FLASH 官方用户手册检索工具。在已转换的 knowledge/manual/<chapter>.md 中按关键词检索，
   返回手册段落 + 源码锚点 + 中文摘要。手册 PDF 共 661 页，按 D-003 决策按需转换。
   当前覆盖：见本 SKILL §3 状态表。
   触发词：手册, 官方手册, manual, 用户指南, user guide, FLASH 文档, 怎么说, UG
@@ -67,11 +67,13 @@ owner: user
 
 > **状态**：✅ stable（5 道验收考题全部通过，2026-07-16；含未覆盖时的 fallback 流程和 PDF 临时提取演示）
 
+> **资产约定**：已转章节 = 本 skill 的 `knowledge/manual/`（随包分发）。原 PDF（661 页，25 MB）只在开发仓库的 `agent/manual/flash4_ug_4p8.pdf`（不随包分发）；外部安装环境无此文件时，跳过 PDF 直查，改用已转章节或对应物理 skill 回答。
+
 ## 1. 角色与边界
 
 ### 1.1 我是做什么的
 
-**官方手册检索器**。给定关键词或章节号，在 `agent/manual/` 下检索已转换的 md 文件。
+**官方手册检索器**。给定关键词或章节号，在 `knowledge/manual/` 下检索已转换的 md 文件。
 
 **重要约束**（按 D-003 决策）：
 - 手册**按需转换**，不是一次性全转
@@ -103,8 +105,8 @@ owner: user
 #### 2.1.1 关键词检索
 
 ```bash
-# 在 agent/manual/ 下搜（只搜 .md，不搜 .pdf 或 -raw.txt）
-rg -i -n '<关键词>' agent/manual/ -g '*.md'
+# 在 knowledge/manual/ 下搜（只搜 .md，不搜 .pdf 或 -raw.txt）
+rg -i -n '<关键词>' knowledge/manual/ -g '*.md'
 ```
 
 **输出格式**：
@@ -113,7 +115,7 @@ rg -i -n '<关键词>' agent/manual/ -g '*.md'
 
 **命中** (按章节排序):
 
-1. `agent/manual/<chapter>/<section>.md:LXX`
+1. `knowledge/manual/<chapter>/<section>.md:LXX`
    **章节**: §X.Y <章节名>
    **段落**:
    ```
@@ -133,10 +135,10 @@ rg -i -n '<关键词>' agent/manual/ -g '*.md'
 
 ```bash
 # 查 §18.4
-ls agent/manual/18-*/18.4*.md 2>/dev/null
+ls knowledge/manual/18-*/18.4*.md 2>/dev/null
 
 # 或在所有 md 的 frontmatter 找 manual_ref
-rg -l "manual_ref.*§18\.4" agent/manual/
+rg -l "manual_ref.*§18\.4" knowledge/manual/
 ```
 
 **已转** → 返回文件路径 + 摘要
@@ -156,7 +158,7 @@ PDF 位置: agent/manual/flash4_ug_4p8.pdf 页 276-296
 #### 2.1.3 已转章节列表
 
 ```bash
-find agent/manual -name "*.md" -type f | sort
+find knowledge/manual -name "*.md" -type f | sort
 ```
 
 输出当前覆盖矩阵（见 §3）。
@@ -165,13 +167,13 @@ find agent/manual -name "*.md" -type f | sort
 
 如果用户问"这个说法是手册写的吗"：
 1. 提取关键短语
-2. 在 `agent/manual/` 搜
+2. 在 `knowledge/manual/` 搜
 3. 命中 → 引用具体段落 + 页码
 4. 未命中 → "本 skill 当前已转章节中没找到。可能在未转章节，或来自其他来源（如源码注释、邮件列表）。"
 
 ### 2.2 未覆盖时的处理
 
-**老实说**："agent/manual/ 当前只覆盖了 N 章，这一章还没转。"
+**老实说**："knowledge/manual/ 当前只覆盖了 N 章，这一章还没转。"
 
 **建议路径**（按优先级）：
 
@@ -231,10 +233,10 @@ find agent/manual -name "*.md" -type f | sort
 
 ```bash
 # 1. 在已转 md 中搜
-rg -i -n '<关键词>' agent/manual/ -g '*.md'
+rg -i -n '<关键词>' knowledge/manual/ -g '*.md'
 
 # 2. 列所有已转章节
-find agent/manual -name '*.md' -type f | sort
+find knowledge/manual -name '*.md' -type f | sort
 
 # 3. 全 PDF 搜（不依赖已转）
 pdftotext agent/manual/flash4_ug_4p8.pdf - | grep -i -n '<关键词>' | head -20
@@ -258,7 +260,7 @@ pdfinfo agent/manual/flash4_ug_4p8.pdf
 ## 6. 示例问答（验收基准）
 
 ### Q1: 手册里关于 critical density 怎么说？
-**A**: 当前 agent/manual/ 还没转 §18.4。PDF 页 277 有原文。建议：
+**A**: 当前 knowledge/manual/ 还没转 §18.4。PDF 页 277 有原文。建议：
 - 直接看 flash-laser/knowledge/overview.md §1.2（已含手册关键公式）
 - 或按 workflows/pdf-to-md.md 转换 §18.4
 

@@ -16,7 +16,7 @@ tags:
   - double-free
   - 3Din2D
 related:
-  - agent/pitfalls/xray-imaging-setup.md
+  - skills/flash-pitfall-finder/knowledge/pitfalls/xray-imaging-setup.md
 ---
 
 # XrayImaging 3Din2D side-on 演化态崩溃——已修复（2026-08-13）

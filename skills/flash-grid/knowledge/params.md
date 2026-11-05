@@ -354,7 +354,7 @@ refine_filter_1 = 0.01
 - **AMR 调度机制**：`knowledge/internals.md §4`
 - **典型 AMR 配置**：`knowledge/recipes.md §3`
 - **几何轴向映射**：`knowledge/overview.md §4`
-- **跨单元查参数**：`flash-param-query` skill + `agent/param-index.md`
+- **跨单元查参数**：`flash-param-query` skill + `skills/flash-param-query/knowledge/param-index.md`
 - **完整参数扫描**：`find source/Grid -name Config | xargs grep "^PARAMETER"`
 
 ---

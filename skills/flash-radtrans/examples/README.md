@@ -17,7 +17,7 @@
 ```bash
 cd /home/ubuntu/local/flash/FLASH4.8/FLASH/FLASH4.8
 # 改 setup-mgd-laser.sh 里的 problem 名后
-bash .claude/skills/flash-radtrans/examples/setup-mgd-laser.sh
+bash skills/flash-radtrans/examples/setup-mgd-laser.sh
 ```
 
 ### parfile 片段

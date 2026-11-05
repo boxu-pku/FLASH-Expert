@@ -1,7 +1,7 @@
 ---
 name: flash-pitfall-finder
 description: |
-  FLASH 踩坑库查询工具。给定错误信息或异常现象，从 agent/pitfalls/ 和各 skill 的 knowledge/pitfalls.md
+  FLASH 踩坑库查询工具。给定错误信息或异常现象，从 skills/flash-pitfall-finder/knowledge/pitfalls/ 和各 skill 的 knowledge/pitfalls.md
   匹配踩坑条目，给出原因 + 修复步骤 + 预防方法。
   覆盖：编译/链接错误、setup 报错、make 报错、运行 abort（Driver_abortFlash）、
   MPI 错误、NaN/ffpe-trap、性能问题、restart 失败、本机特定问题（libmpi 冲突等）。
@@ -114,8 +114,8 @@ owner: user
 - 或异常现象描述（如 "depo 全是 NaN"、"跑得超慢"）
 
 在两个踩坑库中找匹配条目：
-- `agent/pitfalls/` — 跨领域踩坑（编译/MPI/本机/数值等）
-- `.claude/skills/flash-<unit>/knowledge/pitfalls.md` — 各单元内部踩坑
+- `skills/flash-pitfall-finder/knowledge/pitfalls/` — 跨领域踩坑（编译/MPI/本机/数值等）
+- `skills/flash-<unit>/knowledge/pitfalls.md` — 各单元内部踩坑
 
 输出标准化的：**错误原因 + 修复步骤 + 预防方法**。
 
@@ -162,10 +162,10 @@ def extract_keywords(error_message):
 
 ```bash
 # 在跨领域踩坑库搜
-rg -i -n '<关键词1>|<关键词2>' agent/pitfalls/
+rg -i -n '<关键词1>|<关键词2>' skills/flash-pitfall-finder/knowledge/pitfalls/
 
 # 在各 skill 的单元内踩坑库搜
-rg -i -n '<关键词1>|<关键词2>' .claude/skills/*/knowledge/pitfalls.md
+rg -i -n '<关键词1>|<关键词2>' skills/*/knowledge/pitfalls.md
 ```
 
 #### Step 3：匹配度评分
@@ -187,7 +187,7 @@ rg -i -n '<关键词1>|<关键词2>' .claude/skills/*/knowledge/pitfalls.md
 
 **匹配的踩坑** (Top N):
 
-1. ★★★ 高匹配: `agent/pitfalls/<file>.md` 或 `flash-<unit>/knowledge/pitfalls.md §X.Y`
+1. ★★★ 高匹配: `skills/flash-pitfall-finder/knowledge/pitfalls/<file>.md` 或 `flash-<unit>/knowledge/pitfalls.md §X.Y`
    **匹配度**: 8/10（关键短语 + routine 名双命中）
    
    **原因**: <来自条目 §原因>
@@ -217,7 +217,7 @@ rg -i -n '<关键词1>|<关键词2>' .claude/skills/*/knowledge/pitfalls.md
 
 ### 2.3 找不到匹配时
 
-1. **老实说**："agent/pitfalls/ 和各 skill 的 knowledge/pitfalls.md 都没匹配到这条错误。"
+1. **老实说**："skills/flash-pitfall-finder/knowledge/pitfalls/ 和各 skill 的 knowledge/pitfalls.md 都没匹配到这条错误。"
 2. **建议路径**：
    - 调用 `flash-source-reader` 看错误对应的源码位置
    - 用 `grep` 在 FLASH 邮件列表/论坛搜错误原文
@@ -236,7 +236,7 @@ flash-pitfall-finder 经常需要和其他 skill 配合：
 
 ## 3. 踩坑库结构
 
-### 3.1 跨领域踩坑（agent/pitfalls/）
+### 3.1 跨领域踩坑（skills/flash-pitfall-finder/knowledge/pitfalls/）
 
 | 文件 | 错误类别 | 状态 |
 |---|---|---|
@@ -389,10 +389,10 @@ flash-pitfall-finder 经常需要和其他 skill 配合：
 
 ```bash
 # 1. 在跨领域踩坑库搜（核心命令）
-rg -i -n '<关键词>' agent/pitfalls/
+rg -i -n '<关键词>' skills/flash-pitfall-finder/knowledge/pitfalls/
 
 # 2. 在所有 skill 的单元踩坑库搜
-rg -i -n '<关键词>' .claude/skills/*/knowledge/pitfalls.md
+rg -i -n '<关键词>' skills/*/knowledge/pitfalls.md
 
 # 3. 提取所有 abort 信息（建索引用）
 rg -n 'Driver_abortFlash\s*\(' source/ | head -100
@@ -410,27 +410,27 @@ rg -n 'Driver_abortFlash\s*\(' source/ | head -100
 **A**: 命中 `flash-laser/knowledge/pitfalls.md §A.2`（高匹配）。原因：parfile 引用了 `ed_*_7` 但 setup 期 ed_maxBeams 默认 6。修复同 Q1。
 
 ### Q3: 编译时报 `ld: warning: libmpi.so.40 may conflict with libmpi.so.12`
-**A**: 命中 `agent/pitfalls/libmpi-conflict.md`（高匹配，关键短语命中）。本机特定问题，需 sudo mv 临时 workaround。
+**A**: 命中 `skills/flash-pitfall-finder/knowledge/pitfalls/libmpi-conflict.md`（高匹配，关键短语命中）。本机特定问题，需 sudo mv 临时 workaround。
 
 ### Q4: 跑几步后日志显示 `forrtl: error (65): floating invalid` 或 ffpe-trap 触发
-**A**: 命中 `agent/pitfalls/ffpe-trap-and-nan.md`（中匹配）。可能原因：除零、`gaussianRadius=0`、自定义函数发散。诊断流程见条目。
+**A**: 命中 `skills/flash-pitfall-finder/knowledge/pitfalls/ffpe-trap-and-nan.md`（中匹配）。可能原因：除零、`gaussianRadius=0`、自定义函数发散。诊断流程见条目。
 
 ### Q5: 启动报 `[SetupError] Unit not found: Sedov`
-**A**: 命中 `agent/pitfalls/setup-unit-not-found.md`（高匹配）。可能原因：拼写错（注意大小写）、不在 `source/Simulation/SimulationMain/`、setup 命令位置错。
+**A**: 命中 `skills/flash-pitfall-finder/knowledge/pitfalls/setup-unit-not-found.md`（高匹配）。可能原因：拼写错（注意大小写）、不在 `source/Simulation/SimulationMain/`、setup 命令位置错。
 
 ## 7. 待办
 
 - [ ] 跑 5 道验收考题，全部通过则升级 stable
 - [ ] 持续累积：每次遇到新 abort 都生成草稿到 `agent/drafts/pending/`
 - [ ] 写 `agent/TEMPLATES/pitfall.md` 模板（统一踩坑条目格式）
-- [ ] 长期：建 `agent/tools/build_pitfall_index.py` 索引脚本
+- [ ] 长期：建 `skills/flash-pitfall-finder/tools/build_pitfall_index.py` 索引脚本
 
 ## 8. 维护日志
 
 | 日期 | 改动 | 改动人 |
 |---|---|---|
 | 2026-06-17 | 初始创建（draft 骨架） | claude |
-| 2026-07-12 | 升级 draft → beta：扩展 triggers（50+ 错误关键词）；§2 行为协议完整（4 步流程 + 评分 + 协作）；建 agent/pitfalls/ 6 条初始跨领域踩坑；含 5 道验收考题 | claude |
+| 2026-07-12 | 升级 draft → beta：扩展 triggers（50+ 错误关键词）；§2 行为协议完整（4 步流程 + 评分 + 协作）；建 skills/flash-pitfall-finder/knowledge/pitfalls/ 6 条初始跨领域踩坑；含 5 道验收考题 | claude |
 | 2026-07-12 | §4 输出规范修订（4 段 → 5 段，L-008）：加"触发代码字段"为强制第 2 段；加定位流程（rg + sed 提取 if 块）；验收反馈"贴 abort 触发代码比文字解释直观" | claude |
 | 2026-07-12 | §4 二次修订（L-008 收紧）：从"必须贴代码"改为"分类强制"——源码类错误（FLASH .F90 触发）才贴触发代码，非源码类（链接器/Python/系统配置）不贴凑数代码，只做详细机制解释；加禁止行为段（凑数代码、跳过定位、简略回答） | claude |
 | 2026-07-18 | §4 三次修订（L-010）：从"5 段强制都展开"改为"核心 4 段 + 引导项列表"——核心段（错误信息/触发代码/原因解释/解决方案）必给且详细，引导项（用户定位/预防/详细机制/延伸）只列名让用户按需选；控制核心段 100-150 行；用户实战反馈"用户定位部分基本不看，回答过于冗长" | claude |

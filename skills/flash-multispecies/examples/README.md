@@ -17,13 +17,13 @@ FLASH 4.8 Multispecies 多物质追踪的典型配置示例。
 cd /home/ubuntu/local/flash/FLASH4.8/FLASH/FLASH4.8
 
 # 双物质（HEDP 标准，LaserSlab cham+targ）
-bash .claude/skills/flash-multispecies/examples/setup-species-basics.sh laserslab
+bash skills/flash-multispecies/examples/setup-species-basics.sh laserslab
 
 # 或：多层靶（Sunliang_laser_CH 4 层）
-bash .claude/skills/flash-multispecies/examples/setup-species-basics.sh sunliang
+bash skills/flash-multispecies/examples/setup-species-basics.sh sunliang
 
 # 或：多元素物质（CH 塑料 NumElems=2）
-bash .claude/skills/flash-multispecies/examples/setup-species-basics.sh multi-element
+bash skills/flash-multispecies/examples/setup-species-basics.sh multi-element
 ```
 
 ### 2. 确认 setup 生成的物种宏
@@ -95,7 +95,7 @@ grep -A 5 '<spec>      2 constituents' 01-data/<basenm>.log
 
 ## 关键源码入口
 
-详见 `.claude/skills/flash-multispecies/SKILL.md §6`。
+详见 `skills/flash-multispecies/SKILL.md §6`。
 
 | 想理解 | 看哪个文件 |
 |---|---|

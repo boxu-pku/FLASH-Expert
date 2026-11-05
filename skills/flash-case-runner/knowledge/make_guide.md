@@ -5,11 +5,13 @@ category: make
 source_anchors:
   - cases/LaserSlab/Makefile
   - cases/LaserSlab/Makefile.h
-  - agent/pitfalls/libmpi-conflict.md
+  - skills/flash-pitfall-finder/knowledge/pitfalls/libmpi-conflict.md
   - source/Driver/DriverMain/Driver_abortFlash.F90
 ---
 
 # make 阶段完整指南
+> 路径约定：`$FLASH_ROOT` = FLASH 4.8 仓库根目录（本机 `/home/ubuntu/local/flash/FLASH4.8/FLASH/FLASH4.8`）；`$FLASH_LIBS` = 外部库根目录（本机 `/home/ubuntu/local/flash/myFLASH4.8`，含 mpich/hdf5/hypre）。其它机器按实际路径替换。
+
 
 > 本文讲 FLASH 算例生命周期的**第二阶段**：make。
 >
@@ -76,7 +78,7 @@ source_anchors:
 ### 2.1 完整命令（含本机 libmpi 处理）
 
 ```bash
-cd /home/ubuntu/local/flash/FLASH4.8/FLASH/FLASH4.8
+cd $FLASH_ROOT
 
 # 1. setup（如果 objdir 不存在）
 ./setup LaserSlab -2d -auto +cylindrical \
@@ -115,7 +117,7 @@ make -j4 2>&1 | tee make_incremental.log
 
 改了 setup-variables（如换 species 数）后必须重 setup + 重 build：
 ```bash
-cd /home/ubuntu/local/flash/FLASH4.8/FLASH/FLASH4.8
+cd $FLASH_ROOT
 
 # 备份 Makefile.h（site 配置）
 cp cases/LaserSlab/Makefile.h /tmp/Makefile.h.bak
@@ -178,7 +180,7 @@ may conflict with libmpi.so.40
 系统库路径 /lib/x86_64-linux-gnu/
 ├── libmpi.so.40  ← 系统 OpenMPI（Ubuntu apt 装的）
 
-用户库路径 /home/ubuntu/local/flash/myFLASH4.8/mpich/lib/
+用户库路径 $FLASH_LIBS/mpich/lib/
 └── libmpi.so.12  ← 用户自建 mpich（FLASH 用这个编译）
 ```
 
@@ -251,7 +253,7 @@ LFLAGS_OPT = -ggdb -o -Wl,-rpath,${MPI_PATH}/lib
 - 编译期 warning 不可忽略——它意味着运行时会爆炸
 - 编译期用 sudo mv 一次，运行期永远 source flash_env.sh
 
-详见 `agent/pitfalls/libmpi-conflict.md`（含 LD_PRELOAD 方案，2026-08-02 实战验证）。
+详见 `skills/flash-pitfall-finder/knowledge/pitfalls/libmpi-conflict.md`（含 LD_PRELOAD 方案，2026-08-02 实战验证）。
 
 ## 4. 编译错误诊断（按 L-012 先引导贴现场）
 
@@ -307,7 +309,7 @@ collect2: error: ld returned 1 exit status
 
 ### 4.3 SetupError: Unit not found
 
-**这是 setup 阶段（make 之前）的错误**，见 `setup_guide.md §5.1` + `agent/pitfalls/setup-unit-not-found.md`。
+**这是 setup 阶段（make 之前）的错误**，见 `setup_guide.md §5.1` + `skills/flash-pitfall-finder/knowledge/pitfalls/setup-unit-not-found.md`。
 
 ### 4.4 module 'X' not found
 
@@ -346,9 +348,9 @@ make -j4
 **贴什么现场**：
 ```bash
 echo "LD_LIBRARY_PATH: $LD_LIBRARY_PATH"
-ls /home/ubuntu/local/flash/myFLASH4.8/mpich/lib/ | grep -i mpi
-ls /home/ubuntu/local/flash/myFLASH4.8/hdf5/lib/ 2>/dev/null | head
-ls /home/ubuntu/local/flash/myFLASH4.8/hypre/lib/ 2>/dev/null | head
+ls $FLASH_LIBS/mpich/lib/ | grep -i mpi
+ls $FLASH_LIBS/hdf5/lib/ 2>/dev/null | head
+ls $FLASH_LIBS/hypre/lib/ 2>/dev/null | head
 ```
 
 **修复**：确认库实际路径，更新 Makefile.h 的 `*_PATH`。

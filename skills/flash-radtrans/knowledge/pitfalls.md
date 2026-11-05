@@ -396,7 +396,7 @@ grep "HYPRE\|iterations\|converge" 01-data/<basenm>.log | tail -20
 - **完整参数列表**：`knowledge/params.md`
 - **MGD 主流程**：`knowledge/internals.md §2`
 - **典型配置**：`knowledge/recipes.md`
-- **跨单元踩坑**：`agent/pitfalls/`
+- **跨单元踩坑**：`skills/flash-pitfall-finder/knowledge/pitfalls/`
 - **LaserSlab 参考 parfile**：`source/Simulation/SimulationMain/LaserSlab/flash.par`
 - **Diffuse 单元（HYPRE）**：`flash-diffuse`（Phase 2 后）
 

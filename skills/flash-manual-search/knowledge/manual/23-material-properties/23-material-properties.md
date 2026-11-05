@@ -32,7 +32,7 @@ tags:
 
 # 物质属性单元（§23）
 
-> **TL;DR**：5 个独立物质属性子单元：Opacity（为 MGD 提供 κ）、Conductivity（SpitzerHighZ/LeeMore 电子热导）、MagneticResistivity（Constant/SpitzerHighZ 磁阻）、Viscosity（Constant 粘度）、MassDiffusivity（仅 stub）。Opacity 的 Multispecies 实现支持 per-species 的 constant/constcm2g/tabulated 三种模型，表格文件为 IONMIX/IONMIX4/IONMIX6 格式。> **互补声明**：本条目与 `.claude/skills/flash-material/knowledge/` 互补，侧重手册 §23 的整体结构和使用方式。
+> **TL;DR**：5 个独立物质属性子单元：Opacity（为 MGD 提供 κ）、Conductivity（SpitzerHighZ/LeeMore 电子热导）、MagneticResistivity（Constant/SpitzerHighZ 磁阻）、Viscosity（Constant 粘度）、MassDiffusivity（仅 stub）。Opacity 的 Multispecies 实现支持 per-species 的 constant/constcm2g/tabulated 三种模型，表格文件为 IONMIX/IONMIX4/IONMIX6 格式。> **互补声明**：本条目与 `skills/flash-material/knowledge/` 互补，侧重手册 §23 的整体结构和使用方式。
 
 ## 1. 子单元总览
 

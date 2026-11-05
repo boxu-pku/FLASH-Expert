@@ -348,7 +348,7 @@ cp /path/to/backup/mycase_hdf5_chk_0020 01-data/
 - **不能改 setup**：变量数变了 → "variable mismatch" abort
 - **不能跨 FLASH 版本**：4.7 的 chk 不能在 4.8 重启
 - **checkpoint 完整性**：如果 chk 文件损坏（写时中断），可能 abort
-- 详见 `agent/pitfalls/restart-incompatibility.md`
+- 详见 `skills/flash-pitfall-finder/knowledge/pitfalls/restart-incompatibility.md`
 
 ---
 
@@ -451,8 +451,8 @@ Driver 每步检查。如果某步特别长（如 IO 写大文件），可能超
 ### 10.2 跨 skill
 
 - `flash-source-reader/snippets/driver-evolve-flash.md` — 主循环源码
-- `agent/pitfalls/restart-incompatibility.md` — 重启失败详解
-- `agent/pitfalls/mpi-errors.md` — MPI 相关问题
+- `skills/flash-pitfall-finder/knowledge/pitfalls/restart-incompatibility.md` — 重启失败详解
+- `skills/flash-pitfall-finder/knowledge/pitfalls/mpi-errors.md` — MPI 相关问题
 
 ### 10.3 真实案例参考
 

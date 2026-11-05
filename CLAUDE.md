@@ -17,6 +17,8 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 3. **不知道答案时老实说**"本 skill 知识库未覆盖"，并提议生成草稿到 `agent/drafts/pending/`
 4. **禁止**编造参数、函数名、源码细节
 
+> **agent/ 工作区说明**：`agent/`（drafts / TEMPLATES / workflows / LESSONS_LEARNED / PROJECT_PLAN）是开发仓库的治理配套，不随 skill 包分发。skill 文本提到 `agent/...` 的行为（沉淀草稿、按模板新建、查经验库）在配有该工作区的仓库内正常执行；外部环境没有时，改为直接在回答中给出内容，不报错也不自行创建整套目录。
+
 ### 项目状态导航
 
 - 当前进度、任务清单、决策记录：见 `agent/PROJECT_PLAN.md`

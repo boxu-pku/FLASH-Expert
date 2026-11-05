@@ -119,7 +119,7 @@ grep -i "block" cases/Sedov/01-data/flash.log | tail -20
 
 见 `examples/run-sedov.sh`：
 ```bash
-bash /home/ubuntu/local/flash/FLASH4.8/FLASH/FLASH4.8/.claude/skills/flash-case-runner/examples/run-sedov.sh
+bash /home/ubuntu/local/flash/FLASH4.8/FLASH/FLASH4.8/skills/flash-case-runner/examples/run-sedov.sh
 ```
 
 ## 4. 常见坑

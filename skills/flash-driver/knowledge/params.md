@@ -39,7 +39,7 @@ Config 文件含 4 类声明：
 3. **`USESETUPVARS` / `IF` / `ENDIF`** — 条件编译逻辑（如根据 `SplitDriver` 选变体）
 4. **`PPDEFINE`** — 编译期宏（如 `FLASH_OPENMP`）
 
-详见 `agent/param-index.md §1. Driver`。
+详见 `skills/flash-param-query/knowledge/param-index.md §1. Driver`。
 
 ---
 
@@ -107,7 +107,7 @@ checkpointFileNumber = 20    # 从 chk_0020 重启
 basenm = "01-data/mycase_"   # 同原 parfile
 ```
 
-**注意**：restart 要求 setup 一致（变量、几何、block 结构不变）。否则报"variable mismatch"等错。详见 `agent/pitfalls/restart-incompatibility.md`。
+**注意**：restart 要求 setup 一致（变量、几何、block 结构不变）。否则报"variable mismatch"等错。详见 `skills/flash-pitfall-finder/knowledge/pitfalls/restart-incompatibility.md`。
 
 ### 2.4 墙钟时间限制
 
@@ -350,8 +350,8 @@ STS 加速扩散，但**对强非线性扩散（如辐射流体）可能不稳**
 
 - `flash-param-query` — 跨单元查参数
 - `flash-source-reader/snippets/driver-evolve-flash.md` — 主循环源码片段
-- `agent/pitfalls/ffpe-trap-and-nan.md` — 数值异常（dt 相关）
-- `agent/pitfalls/mpi-errors.md` — MPI 相关 abort
+- `skills/flash-pitfall-finder/knowledge/pitfalls/ffpe-trap-and-nan.md` — 数值异常（dt 相关）
+- `skills/flash-pitfall-finder/knowledge/pitfalls/mpi-errors.md` — MPI 相关 abort
 
 ### 外部
 

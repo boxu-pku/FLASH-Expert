@@ -460,9 +460,9 @@ Driver 每步检查。如果某步特别长（如 IO 写大文件），可能超
 
 - `flash-pitfall-finder` — 自动匹配本文件条目
 - `flash-source-reader` — 找 abort 对应源码
-- `agent/pitfalls/ffpe-trap-and-nan.md` — 数值异常通用排查
-- `agent/pitfalls/restart-incompatibility.md` — 重启失败详解
-- `agent/pitfalls/mpi-errors.md` — MPI 相关 abort
+- `skills/flash-pitfall-finder/knowledge/pitfalls/ffpe-trap-and-nan.md` — 数值异常通用排查
+- `skills/flash-pitfall-finder/knowledge/pitfalls/restart-incompatibility.md` — 重启失败详解
+- `skills/flash-pitfall-finder/knowledge/pitfalls/mpi-errors.md` — MPI 相关 abort
 
 ### 5.3 外部
 

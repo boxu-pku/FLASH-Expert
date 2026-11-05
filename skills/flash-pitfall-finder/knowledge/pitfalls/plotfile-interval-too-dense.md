@@ -13,7 +13,7 @@ tags:
   - 磁盘
   - ROMIO
 related:
-  - agent/pitfalls/mpi-romio-null-comm-allreduce.md
+  - skills/flash-pitfall-finder/knowledge/pitfalls/mpi-romio-null-comm-allreduce.md
 ---
 
 # plotFileIntervalTime < dt → 每步一个 plotfile

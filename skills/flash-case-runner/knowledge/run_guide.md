@@ -4,13 +4,15 @@ skill: flash-case-runner
 category: run
 source_anchors:
   - flash_env.sh
-  - agent/pitfalls/libmpi-conflict.md
-  - agent/pitfalls/mpi-errors.md
+  - skills/flash-pitfall-finder/knowledge/pitfalls/libmpi-conflict.md
+  - skills/flash-pitfall-finder/knowledge/pitfalls/mpi-errors.md
   - source/Driver/DriverMain/Driver_evolveFlash.F90
   - source/Driver/DriverMain/Driver_abortFlash.F90
 ---
 
 # run 阶段完整指南
+> 路径约定：`$FLASH_ROOT` = FLASH 4.8 仓库根目录（本机 `/home/ubuntu/local/flash/FLASH4.8/FLASH/FLASH4.8`）；`$FLASH_LIBS` = 外部库根目录（本机 `/home/ubuntu/local/flash/myFLASH4.8`，含 mpich/hdf5/hypre）。其它机器按实际路径替换。
+
 
 > 本文讲 FLASH 算例生命周期的**第三、四阶段**：run + restart。
 >
@@ -72,13 +74,13 @@ source_anchors:
 
 ### 1.4 为什么本机必须 source flash_env.sh
 
-**机制**（详见 `make_guide.md §3` + `agent/pitfalls/libmpi-conflict.md`）：
+**机制**（详见 `make_guide.md §3` + `skills/flash-pitfall-finder/knowledge/pitfalls/libmpi-conflict.md`）：
 
 ```
 系统库路径 /lib/x86_64-linux-gnu/
 └── libmpi.so.40  ← 系统 OpenMPI
 
-用户库路径 /home/ubuntu/local/flash/myFLASH4.8/mpich/lib/
+用户库路径 $FLASH_LIBS/mpich/lib/
 └── libmpi.so.12  ← 用户 mpich（FLASH 链接这个）
 ```
 
@@ -94,7 +96,7 @@ source_anchors:
 - 两个 MPI 实现的 ABI 不兼容 → SIGSEGV in Driver_initParallel.F90:92
 
 **source flash_env.sh 后**：
-- `LD_PRELOAD=/home/ubuntu/local/flash/myFLASH4.8/mpich/lib/libmpi.so`
+- `LD_PRELOAD=$FLASH_LIBS/mpich/lib/libmpi.so`
 - loader 最先加载 mpich 的 libmpi.so.12
 - libHYPRE 也用这个版本 → 无冲突
 
@@ -102,13 +104,13 @@ source_anchors:
 
 ### 2.1 flash_env.sh 做什么（5 步）
 
-项目根 `/home/ubuntu/local/flash/FLASH4.8/FLASH/FLASH4.8/flash_env.sh`：
+项目根 `$FLASH_ROOT/flash_env.sh`：
 
 ```bash
 #!/bin/bash
 
 # 1. 库根路径
-FLASH_LIBS=/home/ubuntu/local/flash/myFLASH4.8
+FLASH_LIBS=$FLASH_LIBS
 MPI_PATH=$FLASH_LIBS/mpich
 HDF5_PATH=$FLASH_LIBS/hdf5
 HYPRE_PATH=$FLASH_LIBS/hypre
@@ -130,7 +132,7 @@ echo "FLASH 4.8 运行环境已配置 ..."
 
 ```bash
 # 每次开新 shell / 跑 flash4 前都要 source
-cd /home/ubuntu/local/flash/FLASH4.8/FLASH/FLASH4.8
+cd $FLASH_ROOT
 source flash_env.sh
 
 # 然后进 01-data/ 跑（硬约束：输出只落 01-data/，不散落 objdir 根目录）
@@ -158,12 +160,12 @@ mpirun -np 2 ../flash4 -par_file ../flash.par
 ### 2.4 验证 flash_env.sh 生效
 
 ```bash
-source /home/ubuntu/local/flash/FLASH4.8/FLASH/FLASH4.8/flash_env.sh
+source $FLASH_ROOT/flash_env.sh
 
 # 应该看到：
 # MPI:  MPICH ...
-# PATH: mpirun → /home/ubuntu/local/flash/myFLASH4.8/mpich/bin/mpirun
-# LD_PRELOAD:    /home/ubuntu/local/flash/myFLASH4.8/mpich/lib/libmpi.so
+# PATH: mpirun → $FLASH_LIBS/mpich/bin/mpirun
+# LD_PRELOAD:    $FLASH_LIBS/mpich/lib/libmpi.so
 ```
 
 如果 `mpirun --version` 显示 OpenMPI，PATH 没生效——检查 shell 是不是用了 `bash` 不是 `sh`。
@@ -180,7 +182,7 @@ source /home/ubuntu/local/flash/FLASH4.8/FLASH/FLASH4.8/flash_env.sh
 > 始终写 CWD——只有在 01-data/ 里启动才能一刀切全覆盖。
 
 ```bash
-cd /home/ubuntu/local/flash/FLASH4.8/FLASH/FLASH4.8
+cd $FLASH_ROOT
 
 # 1. source 运行环境（每次开新 shell 都要做）
 source flash_env.sh
@@ -270,7 +272,7 @@ mpirun -np 2 ../flash4 -par_file ../flash.par
 
 ```bash
 # 用 examples/flash_log_parser.sh 自动提取
-bash /home/ubuntu/local/flash/FLASH4.8/FLASH/FLASH4.8/.claude/skills/flash-case-runner/examples/flash_log_parser.sh \
+bash $FLASH_ROOT/skills/flash-case-runner/examples/flash_log_parser.sh \
   cases/LaserSlab/01-data/flash.log
 ```
 
@@ -346,8 +348,8 @@ Simulation completed successfully.
 
 | 模式 | 含义 | 见 |
 |---|---|---|
-| `SIGSEGV` 在 `Driver_initParallel.F90:92` | libmpi 冲突（运行时） | §3 + `agent/pitfalls/libmpi-conflict.md` |
-| `forrtl: error (65): floating invalid` | 数值 NaN（除零/负开方） | `agent/pitfalls/ffpe-trap-and-nan.md` |
+| `SIGSEGV` 在 `Driver_initParallel.F90:92` | libmpi 冲突（运行时） | §3 + `skills/flash-pitfall-finder/knowledge/pitfalls/libmpi-conflict.md` |
+| `forrtl: error (65): floating invalid` | 数值 NaN（除零/负开方） | `skills/flash-pitfall-finder/knowledge/pitfalls/ffpe-trap-and-nan.md` |
 | `forrtl: error (72): floating overflow` | 数值溢出 | 降 CFL |
 | `forrtl: error (408)` | 数组越界 | 检查 NXB / 几何 |
 | `[ed_xxx]: abort` | 激光参数错 | `flash-laser` skill |
@@ -439,7 +441,7 @@ sim_maxTime = 1.0e-9  # 续跑到这个时间结束
 
 **注意**（2026-08-10 实证纠正）：
 - ~~`restartFile`~~ **不是有效参数**——FLASH 4.8 会报 `ignoring unknown parameter "restartFile"` 并从 0 号 chk 读。续跑靠 `checkpointFileNumber`，文件名由 basenm + 编号自动拼出
-- **`plotFileNumber` 必须设**——chk 里虽存了 plt 计数器，但 parfile 的显式值（原算例留的 0）优先级更高，不设会把新 plt 从 0 重新编号并**静默覆盖**旧 plotfile。见 `agent/pitfalls/restart-plotfilenumber-overwrite.md`
+- **`plotFileNumber` 必须设**——chk 里虽存了 plt 计数器，但 parfile 的显式值（原算例留的 0）优先级更高，不设会把新 plt 从 0 重新编号并**静默覆盖**旧 plotfile。见 `skills/flash-pitfall-finder/knowledge/pitfalls/restart-plotfilenumber-overwrite.md`
 
 ### 5.5 续跑兼容性检查（关键陷阱）
 
@@ -465,12 +467,12 @@ cat cases/<case>/setup_vars | grep species
 - 改了 `species=cham,targ` 为 `species=cham,targ1,targ2,targ3` → abort
 - 改了几何（cartesian → cylindrical）→ abort
 
-**详细**：见 `agent/pitfalls/restart-incompatibility.md`。
+**详细**：见 `skills/flash-pitfall-finder/knowledge/pitfalls/restart-incompatibility.md`。
 
 ### 5.6 续跑的实际命令
 
 ```bash
-cd /home/ubuntu/local/flash/FLASH4.8/FLASH/FLASH4.8
+cd $FLASH_ROOT
 source flash_env.sh
 
 cd cases/LaserSlab/01-data
@@ -528,7 +530,7 @@ ldd cases/<case>/flash4 | grep -i "mpi\|hdf5\|hypre"
 
 **A. SIGSEGV in Driver_initParallel.F90:92**
 
-→ libmpi 冲突（运行时）。修复：`source flash_env.sh`。详见 `make_guide.md §3` + `agent/pitfalls/libmpi-conflict.md`。
+→ libmpi 冲突（运行时）。修复：`source flash_env.sh`。详见 `make_guide.md §3` + `skills/flash-pitfall-finder/knowledge/pitfalls/libmpi-conflict.md`。
 
 **B. forrtl: error (65): floating invalid**
 
@@ -543,7 +545,7 @@ ldd cases/<case>/flash4 | grep -i "mpi\|hdf5\|hypre"
 grep -B5 "forrtl: error (65)" cases/<case>/01-data/flash.log
 ```
 
-**详细**：见 `agent/pitfalls/ffpe-trap-and-nan.md` + `flash-pitfall-finder`。
+**详细**：见 `skills/flash-pitfall-finder/knowledge/pitfalls/ffpe-trap-and-nan.md` + `flash-pitfall-finder`。
 
 **C. abort in [ed_xxx]**
 

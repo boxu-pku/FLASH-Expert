@@ -504,7 +504,7 @@ print *, "  abar = ", abar, " zbar = ", zbar
   - `flash-pitfall-finder` — 错误信息自动匹配（如果有具体 abort 字符串）
   - `flash-source-reader` — 找 Multispecies_* 源码位置
   - `flash-case-runner` — 跑算例时常见问题（Phase 3）
-- 全局踩坑库：`agent/pitfalls/`（跨领域问题）
+- 全局踩坑库：`skills/flash-pitfall-finder/knowledge/pitfalls/`（跨领域问题）
 
 ---
 

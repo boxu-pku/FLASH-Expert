@@ -18,7 +18,7 @@
 ```bash
 cd /home/ubuntu/local/flash/FLASH4.8/FLASH/FLASH4.8
 # 改 setup-helmholtz.sh 里的 problem 名后
-bash .claude/skills/flash-eos/examples/setup-helmholtz.sh
+bash skills/flash-eos/examples/setup-helmholtz.sh
 ```
 
 ### parfile 片段

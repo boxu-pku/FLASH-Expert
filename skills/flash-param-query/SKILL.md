@@ -2,7 +2,7 @@
 name: flash-param-query
 description: |
   FLASH 参数字典查询工具。给定参数名（如 ed_wavelength、rt_mgdFlMode、hy_cfl、sim_xmin），
-  在所有 Config 文件 + agent/param-index.md + 各 skill 的 knowledge/params.md 检索，
+  在所有 Config 文件 + skills/flash-param-query/knowledge/param-index.md + 各 skill 的 knowledge/params.md 检索，
   返回类型/默认值/单位/声明位置/含义/典型值/所属 skill 全信息表。
   覆盖：跨单元查参数、通配符匹配（如 ed_*）、按前缀查（如所有 rt_mgd*）。
   触发词：参数, parameter, 默认值, 单位, 这个参数什么意思, 是什么, runtime parameter,
@@ -118,9 +118,9 @@ owner: user
 
 | 数据源 | 内容 | 用途 |
 |---|---|---|
-| `agent/param-index.md` | 核心参数（~100-200 条）的元信息（含单位、含义、典型值） | 高频查询，预解析 |
+| `skills/flash-param-query/knowledge/param-index.md` | 核心参数（~100-200 条）的元信息（含单位、含义、典型值） | 高频查询，预解析 |
 | `source/**/Config` 文件 | 所有 PARAMETER 的原始声明（类型、默认值） | 权威源，动态搜 |
-| `.claude/skills/flash-<unit>/knowledge/params.md` | 各单元详细参数字典 | 物理背景、陷阱 |
+| `skills/flash-<unit>/knowledge/params.md` | 各单元详细参数字典 | 物理背景、陷阱 |
 
 查询策略：**先 param-index.md → 再 Config → 最后 knowledge/params.md**。
 
@@ -151,14 +151,14 @@ owner: user
 
 ```bash
 # Step A: 先查 param-index（核心参数有预解析信息）
-rg -n "^### <name>" agent/param-index.md
-rg -n "\| <name> \|" agent/param-index.md
+rg -n "^### <name>" skills/flash-param-query/knowledge/param-index.md
+rg -n "\| <name> \|" skills/flash-param-query/knowledge/param-index.md
 
 # Step B: 查 Config 原始声明（权威源）
 find source -name Config -type f 2>/dev/null | xargs grep -n "^PARAMETER\s\+<name>" 2>/dev/null
 
 # Step C: 查对应 skill 的 params.md（详细解释）
-rg -n "<name>" .claude/skills/*/knowledge/params.md 2>/dev/null
+rg -n "<name>" skills/*/knowledge/params.md 2>/dev/null
 ```
 
 **输出标准格式**：
@@ -198,7 +198,7 @@ rg -n "<name>" .claude/skills/*/knowledge/params.md 2>/dev/null
 find source -name Config -type f 2>/dev/null | xargs grep -n "^PARAMETER\s\+ed_" 2>/dev/null | head -20
 
 # 或在 param-index 查
-rg -n "ed_\w+" agent/param-index.md
+rg -n "ed_\w+" skills/flash-param-query/knowledge/param-index.md
 ```
 
 按"单元 + 字母顺序"分组输出。
@@ -221,7 +221,7 @@ find source/<unit-path> -name Config -type f 2>/dev/null | xargs grep "^PARAMETE
 
 ```bash
 # 用关键词在 param-index 找
-rg -i -n "<描述关键词>" agent/param-index.md
+rg -i -n "<描述关键词>" skills/flash-param-query/knowledge/param-index.md
 
 # 在所有 Config 的 D 文档行找
 find source -name Config -type f 2>/dev/null | xargs grep -i "^D\s\+.*<关键词>" 2>/dev/null | head -10
@@ -262,7 +262,7 @@ find source -name Config -type f 2>/dev/null | xargs grep -i "^D\s\+.*<关键词
 | 用户问"这个参数对应的源码在哪" | `flash-param-query`（声明位置）→ `flash-source-reader`（实现细节） |
 | 用户问"为什么这个参数导致 abort" | `flash-param-query`（参数本身）→ `flash-pitfall-finder`（abort 诊断） |
 
-## 3. agent/param-index.md（核心参数索引）
+## 3. skills/flash-param-query/knowledge/param-index.md（核心参数索引）
 
 手工维护的核心参数索引，覆盖 FLASH 高频参数（~150 条），按单元分章节。
 
@@ -283,7 +283,7 @@ find source -name Config -type f 2>/dev/null | xargs grep -i "^D\s\+.*<关键词
 - sourceTerms（Burn/Cool/Heat/Heatexchange）
 - Multispecies / Particles / Gravity / IO
 
-详见 `agent/param-index.md`。
+详见 `skills/flash-param-query/knowledge/param-index.md`。
 
 ## 4. 标准输出格式（按 L-010 精简：与 §2.1.1 合并）
 
@@ -310,10 +310,10 @@ find source -name Config -type f 2>/dev/null | xargs grep -i "^D\s\+.*<关键词
 find source -name Config -type f 2>/dev/null | xargs grep -n "^PARAMETER\s\+<name>" 2>/dev/null
 
 # 2. 在 param-index 找
-rg -n "<name>" agent/param-index.md
+rg -n "<name>" skills/flash-param-query/knowledge/param-index.md
 
 # 3. 在所有 skill 的 params.md 找
-rg -n "<name>" .claude/skills/*/knowledge/params.md 2>/dev/null
+rg -n "<name>" skills/*/knowledge/params.md 2>/dev/null
 
 # 4. 前缀查（如所有 rt_）
 find source -name Config -type f 2>/dev/null | xargs grep -h "^PARAMETER\s\+rt_" 2>/dev/null | sort -u
@@ -348,8 +348,8 @@ rg -n "<NAME>_VAR" bin/Flash.h.tpl
 ## 7. 待办
 
 - [ ] 跑 5 道验收考题，全部通过则升级 stable
-- [ ] 持续扩充 `agent/param-index.md`（每次遇到新参数补一条）
-- [ ] 写 `agent/tools/build_param_index.py` 自动扫描脚本（生成完整索引，含 2884+ 条）
+- [ ] 持续扩充 `skills/flash-param-query/knowledge/param-index.md`（每次遇到新参数补一条）
+- [ ] 写 `skills/flash-param-query/tools/build_param_index.py` 自动扫描脚本（生成完整索引，含 2884+ 条）
 - [ ] 跨 skill 协作验证（如 flash-laser 调用本 skill 查参数）
 
 ## 8. 维护日志
@@ -357,6 +357,6 @@ rg -n "<NAME>_VAR" bin/Flash.h.tpl
 | 日期 | 改动 | 改动人 |
 |---|---|---|
 | 2026-06-17 | 初始创建（draft 骨架） | claude |
-| 2026-07-12 | 升级 draft → beta：扩展 triggers（50+ 关键词含所有参数前缀）；§2 行为协议 4 种查询类型完整；建 agent/param-index.md（150+ 核心参数按单元分类）；含 5 道验收考题 | claude |
+| 2026-07-12 | 升级 draft → beta：扩展 triggers（50+ 关键词含所有参数前缀）；§2 行为协议 4 种查询类型完整；建 skills/flash-param-query/knowledge/param-index.md（150+ 核心参数按单元分类）；含 5 道验收考题 | claude |
 | 2026-07-19 | **按 L-010 精简**：§4 "标准输出格式" 收缩为引用 §2.1.1，避免重复；前缀/单元查询的分组表格约束保留 | claude |
 | 2026-07-19 | **按 L-011 强化"默认值依据"**：§2.1.1 输出格式加必给段"默认值依据"——不只是给数字，要给"为什么默认这个值"；典型值段也要求"按场景给不同值并说明为什么"——flash-grid 验收反馈延伸 | claude |

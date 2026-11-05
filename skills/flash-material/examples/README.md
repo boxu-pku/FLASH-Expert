@@ -17,7 +17,7 @@
 ```bash
 # Step 1: setup（生成 objdir 和 Makefile）
 cd /home/ubuntu/local/flash/FLASH4.8/FLASH/FLASH4.8
-bash .claude/skills/flash-material/examples/setup-spitzerhighz-ionmix4.sh
+bash skills/flash-material/examples/setup-spitzerhighz-ionmix4.sh
 
 # Step 2: 编译
 cd cases/LaserSlab
@@ -45,7 +45,7 @@ make -j4
     -objdir=cases/MyDebugCase
 
 # Step 3: 复制 parfile 片段到 flash.par
-cp .claude/skills/flash-material/examples/parfile-constant-conductivity.txt \
+cp skills/flash-material/examples/parfile-constant-conductivity.txt \
    cases/MyDebugCase/flash.par
 
 # Step 4: 编译 + 跑
