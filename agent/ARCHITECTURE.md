@@ -12,7 +12,7 @@
 | 角色 | 谁来扮演 | 职责 |
 |---|---|---|
 | **Orchestrator（主控）** | Claude Code 本身 | 理解用户意图、选择 skill、组合结果、维护对话 |
-| **Skill（专家）** | `.claude/skills/<name>/` | 单一领域的全部知识 + 行为协议 |
+| **Skill（专家）** | `skills/<name>/`（真身；各 harness 目录为挂载链接） | 单一领域的全部知识 + 行为协议 |
 | **Knowledge Base（知识库）** | 每个 skill 内部的 `knowledge/` | 该领域结构化的 md，带源码锚点 |
 | **Tools（工具脚本）** | 操作层 skill 内部的 `tools/` | 可独立运行的 Python/Bash 脚本 |
 
@@ -120,7 +120,7 @@
 每个 skill 严格按下面结构组织（用 `flash-laser` 演示）：
 
 ```
-.claude/skills/flash-laser/
+skills/flash-laser/
 ├── SKILL.md                    # ★ 必需：frontmatter + 行为协议
 ├── knowledge/                  # 该领域结构化知识
 │   ├── overview.md             # 物理原理 + 设计动机（必含源码锚点）
@@ -238,7 +238,7 @@ draft → beta → stable → (deprecated → archived)
 | `beta` | knowledge 文件齐 + 通过基本问答测试 | 可被调用，但回答标注"测试中" |
 | `stable` | 通过验收考题 | 正式使用 |
 | `deprecated` | 3 个月触发率 < 5% | 标记废弃，下个 review 周期归档 |
-| `archived` | 移到 `.claude/skills.archived/` | 不再加载 |
+| `archived` | 移到仓库根 `skills.archived/`（脱离挂载） | 不再加载 |
 
 **状态变更流程**：
 1. 修改 SKILL.md 的 `status` 字段
@@ -249,15 +249,19 @@ draft → beta → stable → (deprecated → archived)
 
 ## 8. 与 `agent/` 目录的关系
 
-`.claude/skills/` 和 `agent/` 是**两个不同的目录**：
+`skills/` 和 `agent/` 是**两个不同的目录**：
 
 ```
-FLASH4.8/
-├── .claude/skills/          # ★ 18 个 skill（运行时被 Claude Code 加载）
+仓库根/
+├── skills/                  # ★ 18 个 skill 真身（自包含，可独立分发）
 │   ├── flash-laser/
 │   ├── flash-driver/
 │   └── ...
-└── agent/                   # ★ 项目管理 + 共享资源（不被 Claude Code 自动加载）
+├── .claude/skills  -> ../skills   # 挂载链接（Claude Code）
+├── .zcode/skills  -> ../skills    # 挂载链接（ZCode）
+├── .agents/skills -> ../skills    # 挂载链接（DSH / Codex 等，Agent Skills 标准目录）
+├── install.sh               # 外部用户安装器（挂载到任意 harness / 任意项目）
+└── agent/                   # ★ 开发工作台：治理 + 方法论（不被 harness 自动加载）
     ├── PROJECT_PLAN.md      # 项目指挥塔
     ├── ARCHITECTURE.md      # 本文件
     ├── GOVERNANCE.md        # 决策与维护规范
@@ -268,9 +272,11 @@ FLASH4.8/
     └── shared-tools/        # 跨 skill 复用的辅助脚本
 ```
 
+**多 harness 挂载原则**（2026-11 起，v1.2）：skill 真身只有 `skills/` 一份，所有 harness 目录都是指向它的符号链接；新增 harness 支持 = 加一条挂载链接 + `install.sh` 表里加一行，**不复制内容、不分叉维护**。SKILL.md 正文不得硬编码 `.claude/` 等具体挂载路径。
+
 **关键区别**：
-- `.claude/skills/` 里的东西会被 Claude Code 自动加载到上下文
-- `agent/` 里的东西是"项目管理"，Claude Code 通过 Read 工具按需读取
+- `skills/`（经挂载链接）里的东西会被 harness 自动加载到上下文
+- `agent/` 里的东西是"项目管理/开发流程"，agent 通过 Read 工具按需读取；对外分发时 skill 不依赖它也能工作（治理类引用一律写成"若项目配有 agent/ 工作区则……"的条件式）
 
 **为什么这样分**：
 - 避免每个 skill 都重复一份模板
@@ -287,7 +293,7 @@ FLASH4.8/
 ## FLASH Skill 系统
 
 本项目包含 18 个专门 skill（11 物理 + 5 工具 + 2 操作），
-全部位于 `.claude/skills/`。架构和完整清单见 `agent/ARCHITECTURE.md`。
+全部位于 `skills/`（`.claude/skills` 等挂载链接指向它）。架构和完整清单见 `agent/ARCHITECTURE.md`。
 
 ### 调用规则
 - 用户提问时，**优先**匹配最相关的 skill 而不是从主上下文回答

@@ -28,7 +28,9 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ### Skill 触发提示
 
-每个 skill 在 `.claude/skills/<name>/SKILL.md` 顶部的 `description` 和 `triggers` 字段定义了它何时被调用。当用户的提问包含这些关键词时，应优先考虑调用对应 skill。
+每个 skill 在 `skills/<name>/SKILL.md` 顶部的 `description` 和 `triggers` 字段定义了它何时被调用。当用户的提问包含这些关键词时，应优先考虑调用对应 skill。
+
+> `skills/` 是唯一真身；`.claude/skills`、`.zcode/skills`、`.agents/skills` 都是指向它的符号链接（分别供 Claude Code、ZCode、DSH/Codex 等 harness 加载）。外部用户通过 `./install.sh` 挂载，见 README 安装指南。
 
 ---
 

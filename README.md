@@ -1,6 +1,6 @@
 # FLASH-Expert — FLASH 4.8 AI 专家 Agent 系统
 
-> 基于 Claude Code 的多 skill 架构，为 FLASH 4.8 用户提供**物理问答、算例运行、结果分析**的一站式 AI 辅助。
+> 多 harness 通用的多 skill 架构（Claude Code / ZCode / DSH / Codex CLI），为 FLASH 4.8 用户提供**物理问答、算例运行、结果分析**的一站式 AI 辅助。
 >
 > 项目路径：`/path/to/FLASH4.8/`（你的 FLASH 安装目录）
 
@@ -12,7 +12,7 @@ FLASH-Expert 是一套**文件化的 AI 知识库系统**，由 18 个专门 ski
 
 **它不是**：一个需要联网的 Web 服务、一个 RAG 数据库、一个需要训练的模型。
 
-**它是**：一组精心组织的 markdown 知识文件，放在 `.claude/skills/` 下，Claude Code 启动时自动加载。
+**它是**：一组精心组织的 markdown 知识文件，真身在 `skills/` 目录下，用 `./install.sh` 挂载到各 harness 的 skills 目录，agent 启动时自动加载。
 
 ---
 
@@ -80,16 +80,21 @@ FLASH-Expert 是一套**文件化的 AI 知识库系统**，由 18 个专门 ski
 ### 安装步骤
 
 ```bash
-# 1. clone 本仓库
+# 1. clone 本仓库（放在任意位置，如 ~/tools/）
 git clone git@github.com:boxu-pku/FLASH-Expert.git
+cd FLASH-Expert
 
-# 2. 把文件放到 FLASH 项目根目录
-cp -r FLASH-Expert/.claude/  /path/to/FLASH4.8/
-cp -r FLASH-Expert/agent/    /path/to/FLASH4.8/
-cp FLASH-Expert/CLAUDE.md    /path/to/FLASH4.8/
-cp FLASH-Expert/flash_env.sh /path/to/FLASH4.8/
+# 2. 安装 skill（符号链接模式，默认装 claude + zcode + agents 三个 harness）
+./install.sh                                      # 用户级：~/.claude/skills 等
+./install.sh --harness claude,agents              # 只装部分 harness
+./install.sh --scope project --project /path/to/FLASH4.8    # 项目级：装进 FLASH 仓库
+./install.sh --copy                               # 复制模式（Windows / 不支持符号链接时）
 
-# 3. 修改 flash_env.sh 适配你的机器
+# harness → 目录映射：claude→.claude（Claude Code）、zcode→.zcode（ZCode）、
+# agents→.agents（Agent Skills 跨 harness 标准目录，DSH / Codex CLI 等都读这里）、dsh→.dsh
+
+# 3. 配置 FLASH 项目的运行环境（可选，跑算例需要）
+cp flash_env.sh /path/to/FLASH4.8/
 vim /path/to/FLASH4.8/flash_env.sh
 # 改这 3 行路径为你自己的 mpich / hdf5 / hypre 安装位置：
 #   FLASH_LIBS=/your/path/to/libs
@@ -97,12 +102,19 @@ vim /path/to/FLASH4.8/flash_env.sh
 #   HDF5_PATH=$FLASH_LIBS/hdf5
 #   HYPRE_PATH=$FLASH_LIBS/hypre
 
-# 4. 在 FLASH 项目目录启动 Claude Code
+# 4. （可选，项目级安装时）把行为协议和治理工作台也放进 FLASH 项目
+cp AGENTS.md /path/to/FLASH4.8/          # skill 调用规则（Claude Code 用户复制 CLAUDE.md）
+cp -r agent/  /path/to/FLASH4.8/         # 经验沉淀 / 踩坑流程 / 模板（完整工作台）
+
+# 5. 在 FLASH 项目目录启动你的 harness
 cd /path/to/FLASH4.8/
-claude
+claude        # 或 zcode / dsh 等
 ```
 
-启动后 Claude Code 会自动读取 `CLAUDE.md`，识别 18 个 skill。你可以直接提问。
+启动后 harness 自动加载 18 个 skill（靠 SKILL.md 的 description 匹配你的问题），你可以直接提问。
+
+> **符号链接模式的好处**：以后 `git pull` 更新本仓库，所有 harness 里的 skill 立即生效，无需重装。
+> **卸载**：`./install.sh --uninstall`（只移除本包安装的链接/副本，不动你自己的 skill）。
 
 ---
 
@@ -198,8 +210,10 @@ source flash_env.sh
 
 ## 7. skill 架构
 
+真身只有一份，各 harness 通过符号链接挂载（`.claude/skills`、`.zcode/skills`、`.agents/skills` 均指向 `skills/`）：
+
 ```
-.claude/skills/
+skills/                        ← 真身（install.sh 的安装源）
 ├── flash-laser/           知识层
 │   ├── SKILL.md           触发词 + 行为协议 + 验收考题
 │   ├── knowledge/
@@ -220,6 +234,10 @@ source flash_env.sh
 │
 ├── flash-case-runner/     操作层
 └── flash-result-analyzer/
+
+.claude/skills -> ../skills   （Claude Code）
+.zcode/skills -> ../skills    （ZCode）
+.agents/skills -> ../skills   （DSH / Codex CLI 等，Agent Skills 标准目录）
 ```
 
 每个 skill 自包含——有自己的 knowledge/ + examples/，不依赖其他 skill 的内部文件。
@@ -246,9 +264,11 @@ source flash_env.sh
 本仓库会持续更新（新增踩坑、优化 skill、补充手册章节）。获取最新版：
 
 ```bash
-cd /path/to/FLASH4.8/
+cd /path/to/FLASH-Expert/
 git pull
 ```
+
+符号链接模式下所有 harness 立即生效；`--copy` 模式安装的需重新运行 `./install.sh`。
 
 ---
 
